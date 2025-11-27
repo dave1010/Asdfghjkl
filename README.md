@@ -11,7 +11,9 @@ The Swift Package builds a headless skeleton of the input, overlay, and action l
 can iterate on the logic before attaching real AppKit windows and event taps. The overlay
 controller can now drive an injected click handler and keep a zoom controller in sync with
 the current target rectangle, making it easier to plug UI rendering into the existing state
-machine.
+The default action performer (`SystemMouseActionPerformer`) now issues real CGEvent cursor
+warps and clicks on macOS so the scaffold is closer to end-to-end behaviour even before the
+overlay windows exist.
 
 ## Building and testing
 
