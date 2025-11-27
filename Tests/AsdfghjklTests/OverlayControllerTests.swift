@@ -34,11 +34,11 @@ final class OverlayControllerTests: XCTestCase {
     }
 
     func testClickDelegatesToHandlerAndDeactivates() {
-        var clickedPoint: GridPoint?
+        let performer = StubMouseActionPerformer()
         let controller = OverlayController(
             gridLayout: GridLayout(),
             screenBoundsProvider: { GridRect(x: 0, y: 0, width: 80, height: 40) },
-            clickHandler: { clickedPoint = $0 }
+            mouseActionPerformer: performer
         )
 
         controller.start()
@@ -46,6 +46,42 @@ final class OverlayControllerTests: XCTestCase {
         controller.click()
 
         XCTAssertFalse(controller.isActive)
-        XCTAssertEqual(clickedPoint, GridPoint(x: 4, y: 5))
+        XCTAssertEqual(performer.receivedPoint, GridPoint(x: 4, y: 5))
+    }
+
+    func testClickIgnoredWhenInactive() {
+        let performer = StubMouseActionPerformer()
+        let controller = OverlayController(mouseActionPerformer: performer)
+
+        controller.click()
+
+        XCTAssertNil(performer.receivedPoint)
+        XCTAssertFalse(controller.isActive)
+    }
+
+    func testStartRefreshesCurrentRectFromLatestScreenBounds() {
+        let bounds = [
+            GridRect(x: 0, y: 0, width: 100, height: 100),
+            GridRect(x: 200, y: 300, width: 400, height: 500)
+        ]
+        var index = 0
+        let controller = OverlayController(screenBoundsProvider: {
+            defer { index += 1 }
+            return bounds[min(index, bounds.count - 1)]
+        })
+
+        controller.start()
+        controller.handleKey("1")
+        controller.start()
+
+        XCTAssertEqual(controller.targetRect, bounds[1])
+    }
+}
+
+private final class StubMouseActionPerformer: MouseActionPerforming {
+    private(set) var receivedPoint: GridPoint?
+
+    func moveAndClick(at point: GridPoint) {
+        receivedPoint = point
     }
 }

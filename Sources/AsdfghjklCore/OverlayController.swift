@@ -5,18 +5,18 @@ public final class OverlayController {
     private let gridLayout: GridLayout
     private let screenBoundsProvider: () -> GridRect
     private let zoomController: ZoomController?
-    private let clickHandler: (GridPoint) -> Void
+    private let mouseActionPerformer: MouseActionPerforming
 
     public init(
         gridLayout: GridLayout = GridLayout(),
         screenBoundsProvider: @escaping () -> GridRect = { .defaultScreen },
         zoomController: ZoomController? = nil,
-        clickHandler: @escaping (GridPoint) -> Void = { _ in }
+        mouseActionPerformer: MouseActionPerforming = SystemMouseActionPerformer()
     ) {
         self.gridLayout = gridLayout
         self.screenBoundsProvider = screenBoundsProvider
         self.zoomController = zoomController
-        self.clickHandler = clickHandler
+        self.mouseActionPerformer = mouseActionPerformer
         self.state = OverlayState()
     }
 
@@ -51,7 +51,7 @@ public final class OverlayController {
     public func click() {
         guard state.isActive else { return }
         let target = state.targetPoint
-        clickHandler(target)
+        mouseActionPerformer.moveAndClick(at: target)
         state.isActive = false
     }
 }
