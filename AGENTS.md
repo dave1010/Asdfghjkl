@@ -6,4 +6,4 @@ PLAN.md contains our master plan.
 
 Always update docs as you go.
 
-Run tests.
+Run tests. Add new tests and refactor as you go.
