@@ -8,6 +8,7 @@ Tiny swift app yhat lets the user use the keyboard to move and click the mouse.
 * ✅ Command double-tap recognition and input routing logic are in place (`CommandTapRecognizer`, `InputManager`).
 * ✅ Zoom controller tracks the active target rect so UI rendering can subscribe when the AppKit layer arrives.
 * 🟢 Action layer posts real CGEvent cursor warp + click events on macOS via `SystemMouseActionPerformer`.
+* 🟡 CGEvent tap installation is still stubbed in `InputManager.start`; needs wiring once AppKit scaffolding lands.
 * 🟡 Overlay windows, zoom UI, and global event taps remain to be hooked up for a full macOS experience.
 
 ## 0\. UX / Behaviour spec
