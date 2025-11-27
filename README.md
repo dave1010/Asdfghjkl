@@ -36,4 +36,4 @@ ASDFGHJKL_DEMO=1 .build/debug/Asdfghjkl
 GitHub Actions keep the package healthy and provide a downloadable binary:
 
 * `Test` runs on pushes to `main` and all pull requests, setting up Swift 6.2 on macOS and executing `swift test --parallel`.
-* `macOS Binary` is a manually triggered workflow that builds a release binary on macOS and uploads `.build/apple/Products/Release/Asdfghjkl` as an artifact.
+* `macOS Binary` is a manually triggered workflow that builds a release binary on macOS, records `swift build --configuration release --show-bin-path` in the environment, and uploads the resulting `Asdfghjkl` executable from that directory as an artifact.

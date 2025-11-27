@@ -17,11 +17,13 @@ jobs:
           swift-version: "6.2"
 
       - name: Build release artifact
-        run: swift build --configuration release
+        run: |
+          BIN_PATH=$(swift build --configuration release --show-bin-path)
+          echo "BIN_PATH=$BIN_PATH" >> "$GITHUB_ENV"
 
       - name: Upload binary
         uses: actions/upload-artifact@v4
         with:
           name: Asdfghjkl-macos-binary
-          path: .build/apple/Products/Release/Asdfghjkl
+          path: ${{ env.BIN_PATH }}/Asdfghjkl
           if-no-files-found: error
