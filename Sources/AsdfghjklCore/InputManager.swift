@@ -44,4 +44,30 @@ public final class InputManager {
     public func cancelOverlay() {
         overlayController.cancel()
     }
+
+    /// Handles a key down event, performing refinement and click/cancel commands when the overlay is active.
+    /// - Parameters:
+    ///   - key: The pressed character.
+    ///   - commandActive: Whether the Command modifier is currently held down.
+    /// - Returns: `true` if the event was consumed by the overlay controller, `false` otherwise.
+    @discardableResult
+    public func handleKeyDown(_ key: Character, commandActive: Bool = false) -> Bool {
+        if commandActive {
+            markCommandAsModifier()
+        }
+
+        guard overlayController.isActive else { return false }
+
+        if key == "\u{1b}" { // Escape
+            cancelOverlay()
+            return true
+        }
+
+        if key == " " { // Space
+            handleSpacebarClick()
+            return true
+        }
+
+        return handleKeyPress(key) != nil
+    }
 }
