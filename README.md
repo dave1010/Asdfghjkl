@@ -25,3 +25,10 @@ To keep the binary alive for a quick state-machine demo, run with `ASDFGHJKL_DEM
 ```sh
 ASDFGHJKL_DEMO=1 .build/debug/Asdfghjkl
 ```
+
+## Continuous integration
+
+GitHub Actions keep the package healthy and provide a downloadable binary:
+
+* `Test` runs on pushes to `main` and all pull requests, setting up Swift 6.2 on macOS and executing `swift test --parallel`.
+* `macOS Binary` is a manually triggered workflow that builds a release binary on macOS and uploads `.build/apple/Products/Release/Asdfghjkl` as an artifact.
