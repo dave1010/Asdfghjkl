@@ -8,7 +8,10 @@ Named after the Deadmau5' song Asdfghjkl, as the mouse is dead and you use a Qwe
 
 This repository currently contains a scaffolded macOS overlay app described in `PLAN.md`.
 The Swift Package builds a headless skeleton of the input, overlay, and action layers so we
-can iterate on the logic before attaching real AppKit windows and event taps.
+can iterate on the logic before attaching real AppKit windows and event taps. The overlay
+controller can now drive an injected click handler and keep a zoom controller in sync with
+the current target rectangle, making it easier to plug UI rendering into the existing state
+machine.
 
 ## Building and testing
 
