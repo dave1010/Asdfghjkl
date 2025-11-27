@@ -1,6 +1,10 @@
 # Asdfghjkl
 
-Use the keyboard instead of the mouse. Inspired by Deadmau5.
+Use the keyboard instead of the mouse.
+
+Named after the Deadmau5' song Asdfghjkl, as the mouse is dead and you use a Qwerty keyboard instead.
+
+**Double tap Cmd to see an overlay on your screen. Tap a corresponding key to select that area. tap again (and again) to drill down. Tap soace to move the mouse and click.**
 
 This repository currently contains a scaffolded macOS overlay app described in `PLAN.md`.
 The Swift Package builds a headless skeleton of the input, overlay, and action layers so we
