@@ -4,10 +4,19 @@ public final class OverlayController {
     private var state: OverlayState
     private let gridLayout: GridLayout
     private let screenBoundsProvider: () -> GridRect
+    private let zoomController: ZoomController?
+    private let clickHandler: (GridPoint) -> Void
 
-    public init(gridLayout: GridLayout = GridLayout(), screenBoundsProvider: @escaping () -> GridRect = { .defaultScreen }) {
+    public init(
+        gridLayout: GridLayout = GridLayout(),
+        screenBoundsProvider: @escaping () -> GridRect = { .defaultScreen },
+        zoomController: ZoomController? = nil,
+        clickHandler: @escaping (GridPoint) -> Void = { _ in }
+    ) {
         self.gridLayout = gridLayout
         self.screenBoundsProvider = screenBoundsProvider
+        self.zoomController = zoomController
+        self.clickHandler = clickHandler
         self.state = OverlayState()
     }
 
@@ -19,6 +28,7 @@ public final class OverlayController {
         let bounds = screenBoundsProvider()
         state.reset(rect: bounds)
         state.isActive = true
+        zoomController?.update(rect: state.currentRect)
     }
 
     public func toggle() {
@@ -34,13 +44,14 @@ public final class OverlayController {
         guard state.isActive else { return nil }
         guard let refined = gridLayout.rect(for: key, in: state.currentRect) else { return nil }
         state.currentRect = refined
+        zoomController?.update(rect: refined)
         return refined
     }
 
     public func click() {
         guard state.isActive else { return }
-        // TODO: Integrate CGEvent-based click once the macOS target is wired up.
-        // The skeleton keeps this as a no-op so we can build and test the state machine independently.
+        let target = state.targetPoint
+        clickHandler(target)
         state.isActive = false
     }
 }
