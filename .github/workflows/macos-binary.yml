@@ -18,8 +18,14 @@ jobs:
 
       - name: Build release artifact
         run: |
-          BIN_PATH=$(swift build --configuration release --show-bin-path)
+          BIN_PATH=$(swift build --configuration release --product Asdfghjkl --show-bin-path)
           echo "BIN_PATH=$BIN_PATH" >> "$GITHUB_ENV"
+
+      - name: Show build output
+        run: |
+          echo "BIN_PATH=$BIN_PATH"
+          ls -la "$BIN_PATH"
+          find "$BIN_PATH" -maxdepth 1 -type f -print
 
       - name: Upload binary
         uses: actions/upload-artifact@v4
