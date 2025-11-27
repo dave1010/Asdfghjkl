@@ -18,7 +18,8 @@ jobs:
 
       - name: Build release artifact
         run: |
-          BIN_PATH=$(swift build --configuration release --product Asdfghjkl --show-bin-path)
+          swift build --configuration release --product Asdfghjkl
+          BIN_PATH=$(swift build --configuration release --show-bin-path)
           echo "BIN_PATH=$BIN_PATH" >> "$GITHUB_ENV"
 
       - name: Show build output
