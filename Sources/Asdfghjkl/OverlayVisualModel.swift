@@ -3,6 +3,7 @@ import Foundation
 import Combine
 import AsdfghjklCore
 
+@MainActor
 final class OverlayVisualModel: ObservableObject {
     @Published var isActive: Bool = false
     @Published var rootRect: GridRect = .defaultScreen

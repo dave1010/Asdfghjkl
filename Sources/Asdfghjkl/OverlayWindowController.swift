@@ -4,6 +4,7 @@ import SwiftUI
 import AppKit
 import AsdfghjklCore
 
+@MainActor
 final class OverlayWindowController {
     private let screen: NSScreen
     private let model: OverlayVisualModel
