@@ -6,14 +6,12 @@ Named after the Deadmau5' song Asdfghjkl, as the mouse is dead and you use a Qwe
 
 **Double tap Cmd to see an overlay on your screen. Tap a corresponding key to select that area, then tap again (and again) to drill down. Tap space to move the mouse and click.**
 
-This repository currently contains a scaffolded macOS overlay app described in `PLAN.md`.
-The Swift Package builds a headless skeleton of the input, overlay, and action layers so we
-can iterate on the logic before attaching real AppKit windows and event taps. The overlay
-controller can now drive an injected click handler and keep a zoom controller in sync with
-the current target rectangle, making it easier to plug UI rendering into the existing state
-The default action performer (`SystemMouseActionPerformer`) now issues real CGEvent cursor
-warps and clicks on macOS so the scaffold is closer to end-to-end behaviour even before the
-overlay windows exist.
+The package now ships a SwiftUI/AppKit macOS app lifecycle that installs a global CGEvent tap
+to capture double-Cmd activation and routes key presses into the `InputManager`. Borderless
+overlay windows span each connected `NSScreen` to visualise the grid refinement and
+highlight the current target, and a floating zoom window follows
+`ZoomController.observedRect`. Key presses are consumed while the overlay is active: letters
+refine the grid, `Space` clicks, and `Esc` cancels.
 
 ## Building and testing
 
