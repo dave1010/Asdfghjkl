@@ -35,7 +35,9 @@ public final class InputManager {
             },
             userInfo: UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque())
         ) else {
-            print("Failed to create CGEvent tap; missing permissions?")
+            Task { @MainActor [weak self] in
+                self?.presentMissingPermissionsAlert()
+            }
             return
         }
 
@@ -154,6 +156,30 @@ public final class InputManager {
         event.keyboardGetUnicodeString(maxStringLength: buffer.count, actualStringLength: &length, unicodeString: &buffer)
         guard length > 0 else { return nil }
         return Character(String(utf16CodeUnits: buffer, count: length))
+    }
+
+    @MainActor
+    private func presentMissingPermissionsAlert() {
+        let alert = NSAlert()
+        alert.messageText = "Enable Input Monitoring, Accessibility, and Screen Recording"
+        alert.informativeText = "Asdfghjkl needs Input Monitoring and Accessibility permissions to listen for the Cmd double-tap. Grant Screen Recording as well to enable the zoom window. Open System Settings > Privacy & Security, add Asdfghjkl under each section, then restart the app."
+        alert.addButton(withTitle: "Open Input Monitoring")
+        alert.addButton(withTitle: "Open Screen Recording")
+        alert.addButton(withTitle: "OK")
+
+        let response = alert.runModal()
+        switch response {
+        case .alertFirstButtonReturn:
+            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent") {
+                NSWorkspace.shared.open(url)
+            }
+        case .alertSecondButtonReturn:
+            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture") {
+                NSWorkspace.shared.open(url)
+            }
+        default:
+            break
+        }
     }
     #endif
 }
