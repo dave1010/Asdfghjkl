@@ -35,8 +35,8 @@ public final class InputManager {
             },
             userInfo: UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque())
         ) else {
-            Task { @MainActor [weak self] in
-                self?.presentMissingPermissionsAlert()
+            Task { @MainActor in
+                InputManager.presentMissingPermissionsAlert()
             }
             return
         }
@@ -159,7 +159,7 @@ public final class InputManager {
     }
 
     @MainActor
-    private func presentMissingPermissionsAlert() {
+    private static func presentMissingPermissionsAlert() {
         let alert = NSAlert()
         alert.messageText = "Enable Input Monitoring, Accessibility, and Screen Recording"
         alert.informativeText = "Asdfghjkl needs Input Monitoring and Accessibility permissions to listen for the Cmd double-tap. Grant Screen Recording as well to enable the zoom window. Open System Settings > Privacy & Security, add Asdfghjkl under each section, then restart the app."
