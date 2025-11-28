@@ -22,7 +22,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var zoomController: ZoomController!
     private var overlayWindows: [OverlayWindowController] = []
     private var zoomWindow: ZoomWindowController?
-    private var activeScreenRect: GridRect = .defaultScreen
+    private var screenRects: [GridRect] = [.defaultScreen]
     private var screenObserver: NSObjectProtocol?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -31,8 +31,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         overlayController = OverlayController(
             gridLayout: gridLayout,
             screenBoundsProvider: { [weak self] in
-                guard let self else { return .defaultScreen }
-                return self.activeScreenRect
+                guard let self else { return [.defaultScreen] }
+                return self.screenRects
             },
             zoomController: zoomController
         )
@@ -43,7 +43,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         inputManager = InputManager(overlayController: overlayController)
         inputManager.onToggle = { [weak self] in
-            self?.prepareActiveScreen()
+            self?.rebuildOverlayWindows()
         }
 
         screenObserver = NotificationCenter.default.addObserver(
@@ -56,7 +56,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         rebuildOverlayWindows()
         zoomWindow = ZoomWindowController(zoomController: zoomController)
-        prepareActiveScreen()
         inputManager.start()
     }
 
@@ -82,15 +81,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    private func prepareActiveScreen() {
-        guard let screen = screenUnderCursor() ?? NSScreen.main else { return }
-        activeScreenRect = gridRect(for: screen)
-    }
-
     private func rebuildOverlayWindows() {
         overlayWindows.forEach { $0.hide() }
-        overlayWindows = NSScreen.screens.map {
-            OverlayWindowController(screen: $0, model: overlayVisualModel, gridLayout: gridLayout)
+        let screens = NSScreen.screens
+        screenRects = screens.map { gridRect(for: $0) }
+        let slices = GridPartitioner.slices(for: screenRects, layout: gridLayout)
+        let gridSlices = slices.isEmpty ? GridPartitioner.slices(for: [.defaultScreen], layout: gridLayout) : slices
+
+        overlayWindows = zip(screens, gridSlices).map {
+            OverlayWindowController(screen: $0.0, model: overlayVisualModel, gridSlice: $0.1)
         }
 
         if overlayController.isActive {
@@ -100,12 +99,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func handleScreenChange() {
         rebuildOverlayWindows()
-        prepareActiveScreen()
-    }
-
-    private func screenUnderCursor() -> NSScreen? {
-        let mouseLocation = NSEvent.mouseLocation
-        return NSScreen.screens.first { NSMouseInRect(mouseLocation, $0.frame, false) }
     }
 
     private func gridRect(for screen: NSScreen) -> GridRect {
