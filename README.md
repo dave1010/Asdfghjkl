@@ -9,10 +9,12 @@ Named after the Deadmau5' song Asdfghjkl, as the mouse is dead and you use a Qwe
 The package now ships a SwiftUI/AppKit macOS app lifecycle that installs a global CGEvent tap
 to capture double-Cmd activation and routes key presses into the `InputManager`. Borderless
 overlay windows span each connected `NSScreen` to visualise the grid refinement and
-highlight the current target. Each grid cell is labelled with its keyboard key using a translucent fill so you can map inputs to tiles without obscuring the screen. A floating zoom window now captures a live snapshot of the
+highlight the current target. Grid rows follow the keyboard layout from top to bottom so the
+highlight tracks the expected key column and row. Each grid cell is labelled with its keyboard key using a translucent fill so you can map inputs to tiles without obscuring the screen. A floating zoom window now captures a live snapshot of the
 active region (when Screen Recording permission is granted) so you can see exactly where a
 click will land as you refine the grid. The zoom window follows the target region so it
-stays close to your focus point without drifting off-screen. Key presses are consumed while the overlay is
+stays close to your focus point without drifting off-screen and uses a larger preview so the
+destination is easy to verify. Key presses are consumed while the overlay is
 active: letters refine the grid, `Space` clicks, and `Esc` cancels.
 
 On multi-display setups, the 4×10 grid is divided horizontally across all overlay windows so
