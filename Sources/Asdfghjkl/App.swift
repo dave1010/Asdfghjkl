@@ -16,7 +16,7 @@ struct AsdfghjklApp: App {
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let overlayVisualModel = OverlayVisualModel()
-    private let gridLayout = GridLayout()
+    private let gridLayout = AsdfghjklCore.GridLayout()
     private var overlayController: OverlayController!
     private var inputManager: InputManager!
     private var zoomController: ZoomController!
