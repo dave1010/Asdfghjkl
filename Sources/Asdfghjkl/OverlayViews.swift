@@ -76,19 +76,34 @@ struct ZoomPreviewView: View {
             Text("Zoom preview")
                 .font(.headline)
             GeometryReader { proxy in
-                let rect = zoomController.observedRect
-                RoundedRectangle(cornerRadius: 8)
-                    .strokeBorder(Color.accentColor, lineWidth: 2)
-                    .background(
+                ZStack {
+                    if let snapshot = zoomController.latestSnapshot {
+                        Image(decorative: snapshot, scale: 1.0)
+                            .resizable()
+                            .scaledToFit()
+                    } else {
                         RoundedRectangle(cornerRadius: 8)
                             .fill(Color.accentColor.opacity(0.08))
-                    )
-                    .overlay(alignment: .topLeading) {
-                        Text("\(Int(rect.width)) × \(Int(rect.height))")
-                            .font(.caption)
-                            .padding(6)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .strokeBorder(Color.accentColor, lineWidth: 2)
+                            )
+                            .overlay(alignment: .center) {
+                                ProgressView()
+                                    .controlSize(.small)
+                            }
                     }
-                    .padding(.vertical, 4)
+                }
+                .overlay(alignment: .topLeading) {
+                    let rect = zoomController.observedRect
+                    Text("\(Int(rect.width)) × \(Int(rect.height))")
+                        .font(.caption)
+                        .padding(6)
+                        .background(.thinMaterial)
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                        .padding(6)
+                }
+                .padding(.vertical, 4)
             }
             .frame(height: 120)
             .clipShape(RoundedRectangle(cornerRadius: 10))
