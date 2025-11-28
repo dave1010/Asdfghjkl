@@ -13,6 +13,7 @@ struct OverlayGridView: View {
             ZStack(alignment: .topLeading) {
                 Color.black.opacity(model.isActive ? 0.15 : 0)
                 gridLines(in: proxy.size)
+                gridLabels(in: proxy.size)
 
                 if let rect = highlightRect(in: proxy.size) {
                     RoundedRectangle(cornerRadius: 6)
@@ -50,6 +51,28 @@ struct OverlayGridView: View {
             }
         }
         .stroke(Color.white.opacity(0.35), lineWidth: 1)
+    }
+
+    private func gridLabels(in size: CGSize) -> some View {
+        let columnCount = max(1, gridLayout.columns)
+        let rowCount = max(1, gridLayout.rows)
+        let tileWidth = size.width / CGFloat(columnCount)
+        let tileHeight = size.height / CGFloat(rowCount)
+
+        return ForEach(0..<rowCount, id: \.self) { row in
+            ForEach(0..<columnCount, id: \.self) { column in
+                if let label = gridLayout.label(forRow: row, column: column) {
+                    let displayLabel = String(label).uppercased()
+
+                    Text(displayLabel)
+                        .font(.system(size: 22, weight: .semibold, design: .rounded))
+                        .foregroundColor(.white.opacity(0.75))
+                        .frame(width: tileWidth, height: tileHeight)
+                        .background(Color.black.opacity(0.1))
+                        .position(x: tileWidth * (CGFloat(column) + 0.5), y: tileHeight * (CGFloat(row) + 0.5))
+                }
+            }
+        }
     }
 
     private func highlightRect(in size: CGSize) -> CGRect? {
