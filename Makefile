@@ -7,7 +7,7 @@ build:
 	@echo "Alternate CLI stub built at .build/debug/Asdfghjkl-cli"
 
 test:
-	swift test
+	swift test --parallel
 
 run: build
 	.build/debug/Asdfghjkl
