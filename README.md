@@ -15,6 +15,11 @@ click will land as you refine the grid. The zoom window follows the target regio
 stays close to your focus point without drifting off-screen. Key presses are consumed while the overlay is
 active: letters refine the grid, `Space` clicks, and `Esc` cancels.
 
+On multi-display setups, the 4×10 grid is divided horizontally across all overlay windows so
+the first keypress selects a screen by column range (e.g. `Q…T` on screen 1, `Y…P` on screen
+2). Refinements after the first key keep using the per-screen slice, keeping labels and hit
+testing aligned with the display that owns the tapped keys.
+
 Read [ARCHITECTURE.md](ARCHITECTURE.md) for a deeper look at the current components and runtime flow.
 
 The macOS app installs the global CGEvent tap on launch (requires Input Monitoring and
