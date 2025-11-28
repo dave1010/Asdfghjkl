@@ -31,4 +31,16 @@ final class GridLayoutTests: XCTestCase {
         XCTAssertEqual(controller.targetRect, GridRect(x: 0, y: 12.5, width: 1, height: 6.25))
         XCTAssertEqual(controller.targetPoint, GridPoint(x: 0.5, y: 15.625))
     }
+
+    func testLabelsExposeKeyForEachCoordinate() {
+        let layout = GridLayout()
+
+        XCTAssertEqual(layout.label(forRow: 0, column: 0), Character("1"))
+        XCTAssertEqual(layout.label(forRow: 1, column: 1), Character("w"))
+        XCTAssertEqual(layout.label(forRow: 3, column: 9), Character("/"))
+
+        XCTAssertNil(layout.label(forRow: -1, column: 0))
+        XCTAssertNil(layout.label(forRow: 0, column: 20))
+        XCTAssertNil(layout.label(forRow: 4, column: 0))
+    }
 }
