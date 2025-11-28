@@ -5,9 +5,10 @@ final class ZoomControllerTests: XCTestCase {
     func testObservedRectUpdatesOnRefinement() {
         let controller = ZoomController(initialRect: GridRect(x: 0, y: 0, width: 100, height: 100))
 
-        controller.update(rect: GridRect(x: 10, y: 20, width: 30, height: 40))
+        controller.update(rect: GridRect(x: 10, y: 20, width: 30, height: 40), zoomScale: 2.0)
 
         XCTAssertEqual(controller.observedRect, GridRect(x: 10, y: 20, width: 30, height: 40))
+        XCTAssertEqual(controller.zoomScale, 2.0)
     }
 
     #if os(macOS)
@@ -16,7 +17,7 @@ final class ZoomControllerTests: XCTestCase {
         let controller = ZoomController(initialRect: GridRect(x: 0, y: 0, width: 50, height: 50), snapshotProvider: provider)
 
         let rect = GridRect(x: 5, y: 6, width: 10, height: 12)
-        controller.update(rect: rect)
+        controller.update(rect: rect, zoomScale: 1.5)
 
         XCTAssertEqual(provider.requestedRect, rect)
         XCTAssertNotNil(controller.latestSnapshot)

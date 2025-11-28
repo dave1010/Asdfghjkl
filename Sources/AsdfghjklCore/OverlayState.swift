@@ -4,6 +4,7 @@ public struct OverlayState: Sendable {
     public var isActive: Bool = false
     public var rootRect: GridRect = .defaultScreen
     public var currentRect: GridRect = .defaultScreen
+    public var isZoomVisible: Bool = false
 
     public var targetPoint: GridPoint {
         GridPoint(x: currentRect.midX, y: currentRect.midY)
@@ -12,6 +13,7 @@ public struct OverlayState: Sendable {
     public mutating func reset(rect: GridRect) {
         rootRect = rect
         currentRect = rect
+        isZoomVisible = false
         isActive = false
     }
 }

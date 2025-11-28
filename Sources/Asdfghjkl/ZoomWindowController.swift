@@ -11,7 +11,6 @@ final class ZoomWindowController {
     private var window: NSWindow?
     private var cancellable: AnyCancellable?
     private var latestRect: GridRect
-    private let defaultWindowSize = NSSize(width: 360, height: 320)
 
     init(zoomController: ZoomController) {
         self.zoomController = zoomController
@@ -20,7 +19,7 @@ final class ZoomWindowController {
             .receive(on: RunLoop.main)
             .sink { [weak self] rect in
                 self?.latestRect = rect
-                self?.positionWindow(for: rect)
+                self?.resizeWindow(for: rect)
             }
     }
 
@@ -29,7 +28,7 @@ final class ZoomWindowController {
             window = makeWindow()
         }
         window?.orderFrontRegardless()
-        positionWindow(for: latestRect)
+        resizeWindow(for: latestRect)
     }
 
     func hide() {
@@ -43,32 +42,19 @@ final class ZoomWindowController {
         window.level = .floating
         window.isOpaque = false
         window.backgroundColor = NSColor.clear
-        window.hasShadow = true
+        window.hasShadow = false
+        window.ignoresMouseEvents = true
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
-        window.setContentSize(defaultWindowSize)
+        window.setFrame(.zero, display: false)
         return window
     }
 
-    private func positionWindow(for rect: GridRect) {
+    private func resizeWindow(for rect: GridRect) {
         guard let window else { return }
         let targetPoint = GridPoint(x: rect.midX, y: rect.midY)
 
         guard let screen = screen(containing: targetPoint) else { return }
-        let visibleFrame = screen.visibleFrame
-        let bounds = GridRect(
-            x: visibleFrame.origin.x,
-            y: visibleFrame.origin.y,
-            width: visibleFrame.width,
-            height: visibleFrame.height
-        )
-
-        let origin = ZoomWindowPositioner.clampedOrigin(
-            target: targetPoint,
-            windowSize: GridPoint(x: window.frame.width, y: window.frame.height),
-            bounds: bounds
-        )
-
-        window.setFrameOrigin(NSPoint(x: origin.x, y: origin.y))
+        window.setFrame(screen.frame, display: true)
     }
 
     private func screen(containing point: GridPoint) -> NSScreen? {

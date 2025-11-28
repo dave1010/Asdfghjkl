@@ -79,7 +79,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         overlayVisualModel.apply(state: state)
         if state.isActive {
             overlayWindows.forEach { $0.show() }
-            zoomWindow?.show()
+            if state.isZoomVisible {
+                zoomWindow?.show()
+            } else {
+                zoomWindow?.hide()
+            }
         } else {
             overlayWindows.forEach { $0.hide() }
             zoomWindow?.hide()
