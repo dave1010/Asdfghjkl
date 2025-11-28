@@ -11,7 +11,7 @@ final class ZoomWindowController {
     private var window: NSWindow?
     private var cancellable: AnyCancellable?
     private var latestRect: GridRect
-    private let defaultWindowSize = NSSize(width: 240, height: 180)
+    private let defaultWindowSize = NSSize(width: 360, height: 320)
 
     init(zoomController: ZoomController) {
         self.zoomController = zoomController
