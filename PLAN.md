@@ -26,6 +26,7 @@ Tiny swift app yhat lets the user use the keyboard to move and click the mouse.
 *   **Grid:**
     *   4 rows × 10 columns (40 tiles).
     *   Layout roughly matches a QWERTY-ish mental model, but doesn’t have to be perfect.
+    *   Each grid cell visibly shows its corresponding key label with a translucent fill so users can map keys to tiles at a glance.
 *   **Refinement:**
     *   Start with full screen(s) area.
     *   Each key press slices into that area using the 4×10 grid.
@@ -142,7 +143,7 @@ Each window hosts a SwiftUI view that draws:
 
 *   lightly tinted rectangles for the grid cells
 *   the currently-selected tile highlighted
-*   optionally the label (letter) in each tile.
+*   the label (letter) in each tile; labels are required and should remain partially transparent to keep underlying content visible.
 
 You then have one “active display” (start with `NSScreen.main`) and simply ignore keyboard grid updates for other screens initially.
 
