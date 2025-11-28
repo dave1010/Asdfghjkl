@@ -1,11 +1,16 @@
 import Foundation
 
-public struct GridPoint: Equatable {
+public struct GridPoint: Equatable, Sendable {
     public var x: Double
     public var y: Double
+
+    public init(x: Double, y: Double) {
+        self.x = x
+        self.y = y
+    }
 }
 
-public struct GridRect: Equatable {
+public struct GridRect: Equatable, Sendable {
     public var origin: GridPoint
     public var size: GridPoint
 
