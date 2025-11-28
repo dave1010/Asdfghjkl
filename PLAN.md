@@ -32,6 +32,7 @@ Tiny swift app yhat lets the user use the keyboard to move and click the mouse.
     *   After N keypresses, you’ve got a tiny region; `Space` clicks centre of that region.
 *   **Zoom:**
     *   A small floating zoom window that shows a magnified preview of the current region (like a loupe).
+    *   Keep the zoom window near the active target/cursor instead of the screen centre, clamped to the visible frame.
 *   **Multi-display:**
     *   Overlay appears on _all_ displays.
     *   Each keypress refines the region _within the currently selected display_.

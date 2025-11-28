@@ -33,11 +33,11 @@ public final class ZoomController: ObservableObject {
     #endif
 
     #if os(macOS)
-    private let snapshotProvider: ZoomSnapshotProviding?
+    private let snapshotProvider: ZoomSnapshotProviding
 
     public init(initialRect: GridRect = .defaultScreen, snapshotProvider: ZoomSnapshotProviding? = nil) {
         self.observedRect = initialRect
-        self.snapshotProvider = snapshotProvider
+        self.snapshotProvider = snapshotProvider ?? CGWindowListSnapshotProvider()
     }
     #else
     public init(initialRect: GridRect = .defaultScreen) {
@@ -49,7 +49,7 @@ public final class ZoomController: ObservableObject {
         observedRect = rect
 
         #if os(macOS)
-        latestSnapshot = snapshotProvider?.capture(rect: rect)
+        latestSnapshot = snapshotProvider.capture(rect: rect)
         #endif
     }
 }

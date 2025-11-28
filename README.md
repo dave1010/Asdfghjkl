@@ -11,7 +11,8 @@ to capture double-Cmd activation and routes key presses into the `InputManager`.
 overlay windows span each connected `NSScreen` to visualise the grid refinement and
 highlight the current target. A floating zoom window now captures a live snapshot of the
 active region (when Screen Recording permission is granted) so you can see exactly where a
-click will land as you refine the grid. Key presses are consumed while the overlay is
+click will land as you refine the grid. The zoom window follows the target region so it
+stays close to your focus point without drifting off-screen. Key presses are consumed while the overlay is
 active: letters refine the grid, `Space` clicks, and `Esc` cancels.
 
 The macOS app installs the global CGEvent tap on launch (requires Input Monitoring and
