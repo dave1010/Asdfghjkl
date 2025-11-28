@@ -47,6 +47,7 @@ final class OverlayControllerTests: XCTestCase {
 
         XCTAssertFalse(controller.isActive)
         XCTAssertEqual(performer.receivedPoint, GridPoint(x: 4, y: 5))
+        XCTAssertEqual(controller.targetRect, GridRect(x: 0, y: 0, width: 80, height: 40))
     }
 
     func testClickIgnoredWhenInactive() {
@@ -75,6 +76,24 @@ final class OverlayControllerTests: XCTestCase {
         controller.start()
 
         XCTAssertEqual(controller.targetRect, bounds[1])
+    }
+
+    func testCancelResetsRectAndNotifiesListeners() {
+        let bounds = GridRect(x: 10, y: 20, width: 300, height: 200)
+        let controller = OverlayController(screenBoundsProvider: { bounds })
+
+        var observedStates: [OverlayState] = []
+        controller.stateDidChange = { state in
+            observedStates.append(state)
+        }
+
+        controller.start()
+        controller.handleKey("q")
+        controller.cancel()
+
+        XCTAssertEqual(observedStates.count, 3, "start, refinement, and cancel should all notify listeners")
+        XCTAssertEqual(observedStates.last?.currentRect, bounds)
+        XCTAssertFalse(observedStates.last?.isActive ?? true)
     }
 }
 
