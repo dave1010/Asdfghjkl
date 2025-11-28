@@ -2,14 +2,14 @@
 
 Tiny swift app yhat lets the user use the keyboard to move and click the mouse.
 
-## Progress [80% done]
+## Progress [85% done]
 
 * ✅ Core grid refinement and overlay state machine are implemented (`GridLayout`, `OverlayState`, `OverlayController`).
 * ✅ Command double-tap recognition and input routing logic are in place (`CommandTapRecognizer`, `InputManager`).
 * ✅ Zoom controller tracks the active target rect so UI rendering can subscribe when the AppKit layer arrives.
 * 🟢 Action layer posts real CGEvent cursor warp + click events on macOS via `SystemMouseActionPerformer`.
-* 🟢 InputManager consumes overlay key events (grid refinement, space-to-click, escape-to-cancel) and marks Command-as-modifier usage while we wait for CGEvent taps.
-* 🟡 CGEvent tap installation is still stubbed in `InputManager.start`; needs wiring once AppKit scaffolding lands.
+* 🟢 InputManager consumes overlay key events (grid refinement, space-to-click, escape-to-cancel) and marks Command-as-modifier usage to avoid false triggers.
+* 🟢 CGEvent tap installation now lives in `InputManager.start`, consuming overlay key events and toggling on double Cmd.
 * 🟡 Overlay windows, zoom UI, and global event taps remain to be hooked up for a full macOS experience.
 
 ## 0\. UX / Behaviour spec [100% done]
@@ -341,6 +341,7 @@ Now you’ve got the core “magic”: double-tap Cmd, type a few keys, Space to
 
 *   Add a small zoom window that listens to `currentRect` and renders a magnified snapshot.
 *   Tune performance and maybe cap refresh to “on keypress only”.
+    *   **Status:** The zoom window subscribes to `ZoomController` and captures a live display snapshot (requires Screen Recording permission on macOS).
 
 * * *
 
