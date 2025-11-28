@@ -15,6 +15,8 @@ click will land as you refine the grid. The zoom window follows the target regio
 stays close to your focus point without drifting off-screen. Key presses are consumed while the overlay is
 active: letters refine the grid, `Space` clicks, and `Esc` cancels.
 
+Read [ARCHITECTURE.md](ARCHITECTURE.md) for a deeper look at the current components and runtime flow.
+
 The macOS app installs the global CGEvent tap on launch (requires Input Monitoring and
 Accessibility permissions) and rebuilds overlay windows whenever displays change, keeping a
 window on every attached screen. Quit the app to tear down the tap cleanly.
