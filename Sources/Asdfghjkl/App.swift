@@ -25,7 +25,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var activeScreenRect: GridRect = .defaultScreen
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        zoomController = ZoomController(initialRect: .defaultScreen)
+        let snapshotProvider = CGWindowListSnapshotProvider()
+        zoomController = ZoomController(initialRect: .defaultScreen, snapshotProvider: snapshotProvider)
         overlayController = OverlayController(
             gridLayout: gridLayout,
             screenBoundsProvider: { [weak self] in
