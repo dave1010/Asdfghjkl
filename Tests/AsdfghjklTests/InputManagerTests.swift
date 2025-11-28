@@ -55,7 +55,7 @@ final class InputManagerTests: XCTestCase {
 
         XCTAssertTrue(consumed)
         XCTAssertFalse(controller.isActive)
-        XCTAssertEqual(performer.receivedPoint, GridPoint(x: 38, y: 2.5))
+        XCTAssertEqual(performer.clickedPoints, [GridPoint(x: 38, y: 2.5)])
     }
 
     func testEscapeCancelsOverlay() {
@@ -85,9 +85,14 @@ final class InputManagerTests: XCTestCase {
 }
 
 private final class StubMouseActionPerformer: MouseActionPerforming {
-    private(set) var receivedPoint: GridPoint?
+    private(set) var movedPoints: [GridPoint] = []
+    private(set) var clickedPoints: [GridPoint] = []
 
-    func moveAndClick(at point: GridPoint) {
-        receivedPoint = point
+    func moveCursor(to point: GridPoint) {
+        movedPoints.append(point)
+    }
+
+    func click(at point: GridPoint) {
+        clickedPoints.append(point)
     }
 }

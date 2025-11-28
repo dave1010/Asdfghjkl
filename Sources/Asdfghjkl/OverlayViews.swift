@@ -94,52 +94,33 @@ struct ZoomPreviewView: View {
     @ObservedObject var zoomController: ZoomController
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Zoom preview")
-                .font(.headline)
-            GeometryReader { proxy in
-                ZStack {
-                    if let snapshot = zoomController.latestSnapshot {
-                        Image(decorative: snapshot, scale: 1.0)
-                            .resizable()
-                            .scaledToFit()
-                    } else {
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Color.accentColor.opacity(0.08))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .strokeBorder(Color.accentColor, lineWidth: 2)
-                            )
-                            .overlay(alignment: .center) {
-                                ProgressView()
-                                    .controlSize(.small)
-                            }
-                    }
+        GeometryReader { proxy in
+            ZStack {
+                Color.black.opacity(0.5)
+                if let snapshot = zoomController.latestSnapshot {
+                    Image(decorative: snapshot, scale: 1.0)
+                        .resizable()
+                        .interpolation(.high)
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: proxy.size.width, height: proxy.size.height)
+                        .scaleEffect(zoomController.zoomScale, anchor: .center)
+                        .clipped()
+                        .overlay(alignment: .topLeading) {
+                            Text("\(Int(zoomController.zoomScale * 100))%")
+                                .font(.caption)
+                                .padding(8)
+                                .background(.ultraThinMaterial)
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                                .padding()
+                        }
+                } else {
+                    ProgressView()
+                        .progressViewStyle(.circular)
+                        .scaleEffect(1.2)
                 }
-                .overlay(alignment: .topLeading) {
-                    let rect = zoomController.observedRect
-                    Text("\(Int(rect.width)) × \(Int(rect.height))")
-                        .font(.caption)
-                        .padding(6)
-                        .background(.thinMaterial)
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
-                        .padding(6)
-                }
-                .padding(.vertical, 6)
             }
-            .frame(height: 220)
-            .clipShape(RoundedRectangle(cornerRadius: 10))
-
-            let rect = zoomController.observedRect
-            VStack(alignment: .leading, spacing: 4) {
-                Text("x: \(Int(rect.origin.x))  y: \(Int(rect.origin.y))")
-                Text("w: \(Int(rect.width))  h: \(Int(rect.height))")
-            }
-            .font(.caption)
-            .foregroundStyle(.secondary)
+            .ignoresSafeArea()
         }
-        .padding(16)
-        .frame(width: 360)
     }
 }
 #endif

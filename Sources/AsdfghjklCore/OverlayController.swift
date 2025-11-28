@@ -8,6 +8,10 @@ public final class OverlayController {
     private let mouseActionPerformer: MouseActionPerforming
     private var gridSlices: [GridSlice] = []
     private var selectedSliceIndex: Int?
+    private var refinementCount: Int = 0
+    private var zoomScale: Double = 1.0
+    private let baseZoomScale: Double = 1.5
+    private let zoomIncrement: Double = 0.5
     public var stateDidChange: ((OverlayState) -> Void)?
 
     public init(
@@ -38,8 +42,10 @@ public final class OverlayController {
         let bounds = combinedRect(for: screens.isEmpty ? gridSlices.map { $0.screenRect } : screens)
         state.reset(rect: bounds)
         selectedSliceIndex = gridSlices.count == 1 ? 0 : nil
+        refinementCount = 0
+        zoomScale = 1.0
         state.isActive = true
-        zoomController?.update(rect: state.currentRect)
+        zoomController?.update(rect: state.currentRect, zoomScale: zoomScale)
         notifyStateChange()
     }
 
@@ -73,7 +79,11 @@ public final class OverlayController {
         guard let refined else { return nil }
 
         state.currentRect = refined
-        zoomController?.update(rect: refined)
+        refinementCount += 1
+        zoomScale = baseZoomScale + Double(refinementCount - 1) * zoomIncrement
+        state.isZoomVisible = true
+        zoomController?.update(rect: refined, zoomScale: zoomScale)
+        mouseActionPerformer.moveCursor(to: state.targetPoint)
         notifyStateChange()
         return refined
     }
@@ -81,7 +91,7 @@ public final class OverlayController {
     public func click() {
         guard state.isActive else { return }
         let target = state.targetPoint
-        mouseActionPerformer.moveAndClick(at: target)
+        mouseActionPerformer.click(at: target)
         deactivate()
     }
 
@@ -93,6 +103,8 @@ public final class OverlayController {
         guard state.isActive else { return }
         state.reset(rect: state.rootRect)
         selectedSliceIndex = gridSlices.count == 1 ? 0 : nil
+        refinementCount = 0
+        zoomScale = 1.0
         notifyStateChange()
     }
 

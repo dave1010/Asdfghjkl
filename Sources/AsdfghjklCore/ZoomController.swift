@@ -25,11 +25,13 @@ public struct CGWindowListSnapshotProvider: ZoomSnapshotProviding {
 public final class ZoomController: ObservableObject {
     #if canImport(Combine)
     @Published public private(set) var observedRect: GridRect
+    @Published public private(set) var zoomScale: Double
     #if os(macOS)
     @Published public private(set) var latestSnapshot: CGImage?
     #endif
     #else
     public private(set) var observedRect: GridRect
+    public private(set) var zoomScale: Double
     #endif
 
     #if os(macOS)
@@ -37,16 +39,19 @@ public final class ZoomController: ObservableObject {
 
     public init(initialRect: GridRect = .defaultScreen, snapshotProvider: ZoomSnapshotProviding? = nil) {
         self.observedRect = initialRect
+        self.zoomScale = 1.0
         self.snapshotProvider = snapshotProvider ?? CGWindowListSnapshotProvider()
     }
     #else
     public init(initialRect: GridRect = .defaultScreen) {
         self.observedRect = initialRect
+        self.zoomScale = 1.0
     }
     #endif
 
-    public func update(rect: GridRect) {
+    public func update(rect: GridRect, zoomScale: Double) {
         observedRect = rect
+        self.zoomScale = zoomScale
 
         #if os(macOS)
         latestSnapshot = snapshotProvider.capture(rect: rect)

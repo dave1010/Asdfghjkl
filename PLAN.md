@@ -6,14 +6,14 @@ Tiny swift app yhat lets the user use the keyboard to move and click the mouse.
 
 * ✅ Core grid refinement and overlay state machine are implemented (`GridLayout`, `OverlayState`, `OverlayController`).
 * ✅ Command double-tap recognition and input routing logic are in place (`CommandTapRecognizer`, `InputManager`).
-* ✅ Zoom controller tracks the active target rect so UI rendering can subscribe when the AppKit layer arrives.
+* ✅ Zoom controller tracks the active target rect and zoom level so UI rendering can subscribe when the AppKit layer arrives.
 * 🟢 Action layer posts real CGEvent cursor warp + click events on macOS via `SystemMouseActionPerformer`.
 * 🟢 InputManager consumes overlay key events (grid refinement, space-to-click, escape-to-cancel) and marks Command-as-modifier usage to avoid false triggers.
 * 🟢 CGEvent tap installation now lives in `InputManager.start`, consuming overlay key events and toggling on double Cmd.
 * ✅ Overlay windows, zoom UI, and global event taps are now wired into the macOS app lifecycle (auto-rebuild on screen changes).
 * 🔶 Permissions and error handling are thin: when CGEvent taps fail we only `print` to stdout; add user-facing prompts and retry/diagnostic UI for missing Input Monitoring + Accessibility rights.
 * 🔶 Screen reconfiguration while the overlay is active leaves the grid locked to the old screen bounds; cancel or re-seed the state when notifications arrive so refinements stay on-screen.
-* 🔶 Zoom window lifecycle is currently tied to overlay visibility only; consider a “keep warm” option or throttled refresh to avoid slow snapshotting when rapidly re-activating the overlay.
+* 🔶 Zoom window lifecycle is currently tied to overlay visibility only; consider throttling the full-screen preview refresh to avoid slow snapshotting when rapidly re-activating the overlay.
 
 ## 0\. UX / Behaviour spec [100% done]
 
@@ -32,8 +32,8 @@ Tiny swift app yhat lets the user use the keyboard to move and click the mouse.
     *   Each key press slices into that area using the 4×10 grid.
     *   After N keypresses, you’ve got a tiny region; `Space` clicks centre of that region.
 *   **Zoom:**
-    *   A small floating zoom window that shows a magnified preview of the current region (like a loupe).
-    *   Keep the zoom window near the active target/cursor instead of the screen centre, clamped to the visible frame.
+    *   A full-screen zoom window that mirrors the refined region (like macOS scroll-to-zoom) at 150% on first refinement, then adds another 50% of magnification per subsequent key.
+    *   Keep the zoom window on the display that owns the refined region and hide it until the first key press after activation.
 *   **Multi-display:**
     *   Overlay appears on _all_ displays.
     *   Each keypress refines the region _within the currently selected display_.

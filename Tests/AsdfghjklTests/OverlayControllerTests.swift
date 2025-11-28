@@ -46,7 +46,7 @@ final class OverlayControllerTests: XCTestCase {
         controller.click()
 
         XCTAssertFalse(controller.isActive)
-        XCTAssertEqual(performer.receivedPoint, GridPoint(x: 4, y: 5))
+        XCTAssertEqual(performer.clickedPoints.last, GridPoint(x: 4, y: 5))
         XCTAssertEqual(controller.targetRect, GridRect(x: 0, y: 0, width: 80, height: 40))
     }
 
@@ -56,7 +56,7 @@ final class OverlayControllerTests: XCTestCase {
 
         controller.click()
 
-        XCTAssertNil(performer.receivedPoint)
+        XCTAssertTrue(performer.clickedPoints.isEmpty)
         XCTAssertFalse(controller.isActive)
     }
 
@@ -112,12 +112,79 @@ final class OverlayControllerTests: XCTestCase {
 
         XCTAssertEqual(secondRefinement, GridRect(x: 200, y: 37.5, width: 4, height: 6.25))
     }
+
+    func testFirstRefinementShowsZoomAndMovesCursor() {
+        let performer = StubMouseActionPerformer()
+        let zoom = ZoomController()
+        let controller = OverlayController(
+            gridLayout: GridLayout(),
+            screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 100, height: 100)] },
+            zoomController: zoom,
+            mouseActionPerformer: performer
+        )
+
+        controller.start()
+        XCTAssertFalse(controller.stateSnapshot.isZoomVisible)
+
+        let refined = controller.handleKey("q")
+
+        XCTAssertEqual(refined, GridRect(x: 0, y: 25, width: 10, height: 25))
+        XCTAssertEqual(performer.movedPoints.last, GridPoint(x: 5, y: 37.5))
+        XCTAssertTrue(controller.stateSnapshot.isZoomVisible)
+        XCTAssertEqual(zoom.zoomScale, 1.5)
+    }
+
+    func testSubsequentRefinementsIncreaseZoomScale() {
+        let performer = StubMouseActionPerformer()
+        let zoom = ZoomController()
+        let controller = OverlayController(
+            gridLayout: GridLayout(),
+            screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 100, height: 100)] },
+            zoomController: zoom,
+            mouseActionPerformer: performer
+        )
+
+        controller.start()
+        _ = controller.handleKey("q")
+        _ = controller.handleKey("w")
+
+        XCTAssertEqual(zoom.zoomScale, 2.0)
+        XCTAssertEqual(performer.movedPoints.count, 2)
+    }
+
+    func testClickDoesNotMoveCursorAgain() {
+        let performer = StubMouseActionPerformer()
+        let controller = OverlayController(
+            gridLayout: GridLayout(),
+            screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 40, height: 20)] },
+            mouseActionPerformer: performer
+        )
+
+        controller.start()
+        controller.handleKey("0")
+        performer.reset()
+
+        controller.click()
+
+        XCTAssertTrue(performer.movedPoints.isEmpty)
+        XCTAssertEqual(performer.clickedPoints, [GridPoint(x: 38, y: 2.5)])
+    }
 }
 
 private final class StubMouseActionPerformer: MouseActionPerforming {
-    private(set) var receivedPoint: GridPoint?
+    private(set) var movedPoints: [GridPoint] = []
+    private(set) var clickedPoints: [GridPoint] = []
 
-    func moveAndClick(at point: GridPoint) {
-        receivedPoint = point
+    func moveCursor(to point: GridPoint) {
+        movedPoints.append(point)
+    }
+
+    func click(at point: GridPoint) {
+        clickedPoints.append(point)
+    }
+
+    func reset() {
+        movedPoints.removeAll()
+        clickedPoints.removeAll()
     }
 }
