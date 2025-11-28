@@ -22,7 +22,7 @@ final class GridLayoutTests: XCTestCase {
 
     func testRefinementChainIsDeterministic() {
         let layout = GridLayout()
-        let controller = OverlayController(gridLayout: layout, screenBoundsProvider: { GridRect(x: 0, y: 0, width: 100, height: 100) })
+        let controller = OverlayController(gridLayout: layout, screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 100, height: 100)] })
         controller.start()
 
         _ = controller.handleKey("1")

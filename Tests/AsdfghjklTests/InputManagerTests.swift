@@ -30,7 +30,7 @@ final class InputManagerTests: XCTestCase {
     }
 
     func testOverlayHandlesGridRefinementWhenActive() {
-        let controller = OverlayController(screenBoundsProvider: { GridRect(x: 0, y: 0, width: 100, height: 100) })
+        let controller = OverlayController(screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 100, height: 100)] })
         let manager = InputManager(overlayController: controller)
 
         controller.start()
@@ -43,7 +43,7 @@ final class InputManagerTests: XCTestCase {
     func testSpacebarClickConsumesEventAndDeactivatesOverlay() {
         let performer = StubMouseActionPerformer()
         let controller = OverlayController(
-            screenBoundsProvider: { GridRect(x: 0, y: 0, width: 40, height: 20) },
+            screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 40, height: 20)] },
             mouseActionPerformer: performer
         )
         let manager = InputManager(overlayController: controller)

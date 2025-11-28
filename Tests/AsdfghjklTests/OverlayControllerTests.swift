@@ -4,7 +4,7 @@ import XCTest
 final class OverlayControllerTests: XCTestCase {
     func testStartResetsToScreenBounds() {
         let expectedRect = GridRect(x: 10, y: 20, width: 300, height: 200)
-        let controller = OverlayController(screenBoundsProvider: { expectedRect })
+        let controller = OverlayController(screenBoundsProvider: { [expectedRect] })
 
         controller.start()
 
@@ -17,7 +17,7 @@ final class OverlayControllerTests: XCTestCase {
         let zoom = ZoomController(initialRect: .defaultScreen)
         let controller = OverlayController(
             gridLayout: GridLayout(),
-            screenBoundsProvider: { GridRect(x: 0, y: 0, width: 100, height: 100) },
+            screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 100, height: 100)] },
             zoomController: zoom
         )
 
@@ -37,7 +37,7 @@ final class OverlayControllerTests: XCTestCase {
         let performer = StubMouseActionPerformer()
         let controller = OverlayController(
             gridLayout: GridLayout(),
-            screenBoundsProvider: { GridRect(x: 0, y: 0, width: 80, height: 40) },
+            screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 80, height: 40)] },
             mouseActionPerformer: performer
         )
 
@@ -68,7 +68,7 @@ final class OverlayControllerTests: XCTestCase {
         var index = 0
         let controller = OverlayController(screenBoundsProvider: {
             defer { index += 1 }
-            return bounds[min(index, bounds.count - 1)]
+            return [bounds[min(index, bounds.count - 1)]]
         })
 
         controller.start()
@@ -80,7 +80,7 @@ final class OverlayControllerTests: XCTestCase {
 
     func testCancelResetsRectAndNotifiesListeners() {
         let bounds = GridRect(x: 10, y: 20, width: 300, height: 200)
-        let controller = OverlayController(screenBoundsProvider: { bounds })
+        let controller = OverlayController(screenBoundsProvider: { [bounds] })
 
         var observedStates: [OverlayState] = []
         controller.stateDidChange = { state in
@@ -94,6 +94,23 @@ final class OverlayControllerTests: XCTestCase {
         XCTAssertEqual(observedStates.count, 3, "start, refinement, and cancel should all notify listeners")
         XCTAssertEqual(observedStates.last?.currentRect, bounds)
         XCTAssertFalse(observedStates.last?.isActive ?? true)
+    }
+
+    func testFirstKeySelectsScreenSlice() {
+        let screens = [
+            GridRect(x: 0, y: 0, width: 100, height: 100),
+            GridRect(x: 200, y: 0, width: 100, height: 100)
+        ]
+        let controller = OverlayController(screenBoundsProvider: { screens })
+
+        controller.start()
+        let firstRefinement = controller.handleKey("y")
+
+        XCTAssertEqual(firstRefinement, GridRect(x: 200, y: 25, width: 20, height: 25))
+
+        let secondRefinement = controller.handleKey("h")
+
+        XCTAssertEqual(secondRefinement, GridRect(x: 200, y: 37.5, width: 4, height: 6.25))
     }
 }
 

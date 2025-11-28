@@ -7,13 +7,13 @@ import AsdfghjklCore
 final class OverlayWindowController {
     private let screen: NSScreen
     private let model: OverlayVisualModel
-    private let gridLayout: GridLayout
+    private let gridSlice: GridSlice
     private var window: NSWindow?
 
-    init(screen: NSScreen, model: OverlayVisualModel, gridLayout: GridLayout) {
+    init(screen: NSScreen, model: OverlayVisualModel, gridSlice: GridSlice) {
         self.screen = screen
         self.model = model
-        self.gridLayout = gridLayout
+        self.gridSlice = gridSlice
     }
 
     func show() {
@@ -29,7 +29,7 @@ final class OverlayWindowController {
     }
 
     private func makeWindow() -> NSWindow {
-        let overlayView = OverlayGridView(model: model, screen: screen, gridLayout: gridLayout)
+        let overlayView = OverlayGridView(model: model, screen: screen, gridSlice: gridSlice)
         let hosting = NSHostingController(rootView: overlayView)
         let window = NSWindow(contentViewController: hosting)
         window.setFrame(screen.frame, display: true)

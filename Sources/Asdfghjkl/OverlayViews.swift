@@ -6,7 +6,7 @@ import AsdfghjklCore
 struct OverlayGridView: View {
     @ObservedObject var model: OverlayVisualModel
     let screen: NSScreen
-    let gridLayout: GridLayout
+    let gridSlice: GridSlice
 
     var body: some View {
         GeometryReader { proxy in
@@ -36,15 +36,15 @@ struct OverlayGridView: View {
 
     private func gridLines(in size: CGSize) -> some View {
         Path { path in
-            let columnStep = size.width / Double(max(1, gridLayout.columns))
-            for column in 1..<gridLayout.columns {
+            let columnStep = size.width / Double(max(1, gridSlice.layout.columns))
+            for column in 1..<gridSlice.layout.columns {
                 let x = columnStep * Double(column)
                 path.move(to: CGPoint(x: x, y: 0))
                 path.addLine(to: CGPoint(x: x, y: size.height))
             }
 
-            let rowStep = size.height / Double(max(1, gridLayout.rows))
-            for row in 1..<gridLayout.rows {
+            let rowStep = size.height / Double(max(1, gridSlice.layout.rows))
+            for row in 1..<gridSlice.layout.rows {
                 let y = rowStep * Double(row)
                 path.move(to: CGPoint(x: 0, y: y))
                 path.addLine(to: CGPoint(x: size.width, y: y))
@@ -54,14 +54,14 @@ struct OverlayGridView: View {
     }
 
     private func gridLabels(in size: CGSize) -> some View {
-        let columnCount = max(1, gridLayout.columns)
-        let rowCount = max(1, gridLayout.rows)
+        let columnCount = max(1, gridSlice.layout.columns)
+        let rowCount = max(1, gridSlice.layout.rows)
         let tileWidth = size.width / CGFloat(columnCount)
         let tileHeight = size.height / CGFloat(rowCount)
 
         return ForEach(0..<rowCount, id: \.self) { row in
             ForEach(0..<columnCount, id: \.self) { column in
-                if let label = gridLayout.label(forRow: row, column: column) {
+                if let label = gridSlice.layout.label(forRow: row, column: column) {
                     let displayLabel = String(label).uppercased()
 
                     Text(displayLabel)
