@@ -83,11 +83,10 @@ struct OverlayGridView: View {
 
         let normalizedX = (intersection.minX - screenFrame.minX) / screenFrame.width * size.width
         let normalizedWidth = intersection.width / screenFrame.width * size.width
-        let normalizedYFromBottom = (intersection.minY - screenFrame.minY) / screenFrame.height * size.height
+        let normalizedY = (intersection.minY - screenFrame.minY) / screenFrame.height * size.height
         let normalizedHeight = intersection.height / screenFrame.height * size.height
-        let convertedY = size.height - normalizedYFromBottom - normalizedHeight
 
-        return CGRect(x: normalizedX, y: convertedY, width: normalizedWidth, height: normalizedHeight)
+        return CGRect(x: normalizedX, y: normalizedY, width: normalizedWidth, height: normalizedHeight)
     }
 }
 
@@ -126,9 +125,9 @@ struct ZoomPreviewView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 6))
                         .padding(6)
                 }
-                .padding(.vertical, 4)
+                .padding(.vertical, 6)
             }
-            .frame(height: 120)
+            .frame(height: 220)
             .clipShape(RoundedRectangle(cornerRadius: 10))
 
             let rect = zoomController.observedRect
@@ -140,7 +139,7 @@ struct ZoomPreviewView: View {
             .foregroundStyle(.secondary)
         }
         .padding(16)
-        .frame(width: 240)
+        .frame(width: 360)
     }
 }
 #endif
