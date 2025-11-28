@@ -2,7 +2,7 @@
 
 Tiny swift app yhat lets the user use the keyboard to move and click the mouse.
 
-## Progress [95% done]
+## Progress [80% done]
 
 * ✅ Core grid refinement and overlay state machine are implemented (`GridLayout`, `OverlayState`, `OverlayController`).
 * ✅ Command double-tap recognition and input routing logic are in place (`CommandTapRecognizer`, `InputManager`).
@@ -11,6 +11,9 @@ Tiny swift app yhat lets the user use the keyboard to move and click the mouse.
 * 🟢 InputManager consumes overlay key events (grid refinement, space-to-click, escape-to-cancel) and marks Command-as-modifier usage to avoid false triggers.
 * 🟢 CGEvent tap installation now lives in `InputManager.start`, consuming overlay key events and toggling on double Cmd.
 * ✅ Overlay windows, zoom UI, and global event taps are now wired into the macOS app lifecycle (auto-rebuild on screen changes).
+* 🔶 Permissions and error handling are thin: when CGEvent taps fail we only `print` to stdout; add user-facing prompts and retry/diagnostic UI for missing Input Monitoring + Accessibility rights.
+* 🔶 Screen reconfiguration while the overlay is active leaves the grid locked to the old screen bounds; cancel or re-seed the state when notifications arrive so refinements stay on-screen.
+* 🔶 Zoom window lifecycle is currently tied to overlay visibility only; consider a “keep warm” option or throttled refresh to avoid slow snapshotting when rapidly re-activating the overlay.
 
 ## 0\. UX / Behaviour spec [100% done]
 

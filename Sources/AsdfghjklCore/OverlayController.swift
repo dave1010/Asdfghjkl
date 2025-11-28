@@ -39,8 +39,7 @@ public final class OverlayController {
     }
 
     public func cancel() {
-        state.isActive = false
-        notifyStateChange()
+        deactivate()
     }
 
     @discardableResult
@@ -57,11 +56,16 @@ public final class OverlayController {
         guard state.isActive else { return }
         let target = state.targetPoint
         mouseActionPerformer.moveAndClick(at: target)
-        state.isActive = false
-        notifyStateChange()
+        deactivate()
     }
 
     private func notifyStateChange() {
         stateDidChange?(state)
+    }
+
+    private func deactivate() {
+        guard state.isActive else { return }
+        state.reset(rect: state.rootRect)
+        notifyStateChange()
     }
 }
