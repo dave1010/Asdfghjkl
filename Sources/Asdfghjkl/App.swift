@@ -23,6 +23,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var overlayWindows: [OverlayWindowController] = []
     private var zoomWindow: ZoomWindowController?
     private var activeScreenRect: GridRect = .defaultScreen
+    private var screenObserver: NSObjectProtocol?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let snapshotProvider = CGWindowListSnapshotProvider()
@@ -45,6 +46,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self?.prepareActiveScreen()
         }
 
+        screenObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didChangeScreenParametersNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.handleScreenChange()
+        }
+
         rebuildOverlayWindows()
         zoomWindow = ZoomWindowController(zoomController: zoomController)
         prepareActiveScreen()
@@ -52,6 +61,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        if let screenObserver {
+            NotificationCenter.default.removeObserver(screenObserver)
+        }
+        inputManager.stop()
         overlayWindows.forEach { $0.hide() }
         zoomWindow?.hide()
     }
@@ -79,6 +92,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         overlayWindows = NSScreen.screens.map {
             OverlayWindowController(screen: $0, model: overlayVisualModel, gridLayout: gridLayout)
         }
+
+        if overlayController.isActive {
+            overlayWindows.forEach { $0.show() }
+        }
+    }
+
+    private func handleScreenChange() {
+        rebuildOverlayWindows()
+        prepareActiveScreen()
     }
 
     private func screenUnderCursor() -> NSScreen? {

@@ -14,6 +14,10 @@ active region (when Screen Recording permission is granted) so you can see exact
 click will land as you refine the grid. Key presses are consumed while the overlay is
 active: letters refine the grid, `Space` clicks, and `Esc` cancels.
 
+The macOS app installs the global CGEvent tap on launch (requires Input Monitoring and
+Accessibility permissions) and rebuilds overlay windows whenever displays change, keeping a
+window on every attached screen. Quit the app to tear down the tap cleanly.
+
 ## Building and testing
 
 You can build and run the placeholder executable with the provided `Makefile`:
