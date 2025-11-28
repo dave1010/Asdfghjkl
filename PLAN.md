@@ -2,7 +2,7 @@
 
 Tiny swift app yhat lets the user use the keyboard to move and click the mouse.
 
-## Progress
+## Progress [80% done]
 
 * ✅ Core grid refinement and overlay state machine are implemented (`GridLayout`, `OverlayState`, `OverlayController`).
 * ✅ Command double-tap recognition and input routing logic are in place (`CommandTapRecognizer`, `InputManager`).
@@ -12,7 +12,7 @@ Tiny swift app yhat lets the user use the keyboard to move and click the mouse.
 * 🟡 CGEvent tap installation is still stubbed in `InputManager.start`; needs wiring once AppKit scaffolding lands.
 * 🟡 Overlay windows, zoom UI, and global event taps remain to be hooked up for a full macOS experience.
 
-## 0\. UX / Behaviour spec
+## 0\. UX / Behaviour spec [100% done]
 
 *   **Trigger:** double-tap `Cmd` anywhere in macOS.
 *   **Mode:** while the overlay is visible:
@@ -36,7 +36,7 @@ Tiny swift app yhat lets the user use the keyboard to move and click the mouse.
 
 * * *
 
-## 1\. High-level architecture
+## 1\. High-level architecture [85% done]
 
 Single Xcode macOS app target, with three main concerns:
 
@@ -60,7 +60,7 @@ You can keep most of this sane with a few structs and a very small state machine
 
 * * *
 
-## 2\. Input layer – double-tap Cmd
+## 2\. Input layer – double-tap Cmd [75% done]
 
 ### 2.1 Event tap setup
 
@@ -114,7 +114,7 @@ You can keep all of this in a tiny `CommandTapRecognizer` class that emits `onDo
 
 * * *
 
-## 3\. Overlay layer – windows, grid, and state
+## 3\. Overlay layer – windows, grid, and state [55% done]
 
 ### 3.1 Multi-screen windows
 
@@ -171,7 +171,7 @@ On cancel:
 
 * * *
 
-## 4\. Grid model – 4×10 layout
+## 4\. Grid model – 4×10 layout [85% done]
 
 You want a mapping `Character → (row, col)` for a 4×10 grid.
 
@@ -234,7 +234,7 @@ On each character press:
 
 * * *
 
-## 5\. Zooming (loupe)
+## 5\. Zooming (loupe) [35% done]
 
 Simplest design:
 
@@ -263,7 +263,7 @@ You can absolutely skip this for v0 if you want to reduce surface area.
 
 * * *
 
-## 6\. Action layer – clicking
+## 6\. Action layer – clicking [65% done]
 
 When the user hits `Space`:
 
@@ -297,7 +297,7 @@ You’ll need the app in **Accessibility** (for CGEvents) and/or **Input Monitor
 
 * * *
 
-## 7\. Impl roadmap (realistic steps)
+## 7\. Impl roadmap (realistic steps) [40% done]
 
 If you want a smooth path, I’d do this:
 
@@ -344,7 +344,7 @@ Now you’ve got the core “magic”: double-tap Cmd, type a few keys, Space to
 
 * * *
 
-## 8\. Rough class layout
+## 8\. Rough class layout [80% done]
 
 Something like:
 
@@ -370,7 +370,7 @@ Something like:
 
 * * *
 
-## 9\. A couple of design caveats
+## 9\. A couple of design caveats [60% done]
 
 *   **Double-tap threshold:** too short and you’ll “miss” fast taps; too long and accidental double CMD taps will trigger. 250–350 ms is a decent starting range; make it configurable.
 *   **Interference with normal Cmd usage:** you _must_ treat any `keyDown` while Cmd is held as “used as modifier” to avoid spurious triggers after `Cmd+C, Cmd+V` patterns.
