@@ -28,6 +28,10 @@ The macOS app installs the global CGEvent tap on launch (requires Input Monitori
 Accessibility permissions) and rebuilds overlay windows whenever displays change, keeping a
 window on every attached screen. Quit the app to tear down the tap cleanly.
 
+### Permissions
+
+On first launch, macOS may block the event tap unless the app is allowed under **System Settings > Privacy & Security > Input Monitoring** and **Accessibility**. The app now surfaces a dialog when the tap cannot be created so you can grant the permissions and restart. The zoom window also requires **Screen Recording** permission to mirror the focused region.
+
 ## Building and testing
 
 You can build and run the placeholder executable with the provided `Makefile`:
