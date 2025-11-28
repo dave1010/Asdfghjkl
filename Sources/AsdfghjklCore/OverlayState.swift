@@ -1,6 +1,6 @@
 import Foundation
 
-public struct OverlayState {
+public struct OverlayState: Sendable {
     public var isActive: Bool = false
     public var rootRect: GridRect = .defaultScreen
     public var currentRect: GridRect = .defaultScreen

@@ -14,6 +14,7 @@ struct AsdfghjklApp: App {
     }
 }
 
+@MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let overlayVisualModel = OverlayVisualModel()
     private let gridLayout = AsdfghjklCore.GridLayout()
@@ -38,12 +39,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )
 
         overlayController.stateDidChange = { [weak self] state in
-            self?.handleStateChange(state)
+            Task { @MainActor in
+                self?.handleStateChange(state)
+            }
         }
 
         inputManager = InputManager(overlayController: overlayController)
         inputManager.onToggle = { [weak self] in
-            self?.rebuildOverlayWindows()
+            Task { @MainActor in
+                self?.rebuildOverlayWindows()
+            }
         }
 
         screenObserver = NotificationCenter.default.addObserver(
@@ -51,7 +56,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.handleScreenChange()
+            Task { @MainActor in
+                self?.handleScreenChange()
+            }
         }
 
         rebuildOverlayWindows()
@@ -69,15 +76,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func handleStateChange(_ state: OverlayState) {
-        DispatchQueue.main.async {
-            self.overlayVisualModel.apply(state: state)
-            if state.isActive {
-                self.overlayWindows.forEach { $0.show() }
-                self.zoomWindow?.show()
-            } else {
-                self.overlayWindows.forEach { $0.hide() }
-                self.zoomWindow?.hide()
-            }
+        overlayVisualModel.apply(state: state)
+        if state.isActive {
+            overlayWindows.forEach { $0.show() }
+            zoomWindow?.show()
+        } else {
+            overlayWindows.forEach { $0.hide() }
+            zoomWindow?.hide()
         }
     }
 

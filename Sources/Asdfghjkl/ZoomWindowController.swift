@@ -5,6 +5,7 @@ import AppKit
 import Combine
 import AsdfghjklCore
 
+@MainActor
 final class ZoomWindowController {
     private let zoomController: ZoomController
     private var window: NSWindow?
