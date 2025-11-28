@@ -20,6 +20,8 @@ public final class InputManager {
 
     public func start() {
         #if os(macOS)
+        guard eventTap == nil else { return }
+
         let eventMask = (1 << CGEventType.flagsChanged.rawValue) | (1 << CGEventType.keyDown.rawValue)
         guard let eventTap = CGEvent.tapCreate(
             tap: .cgSessionEventTap,
@@ -44,6 +46,21 @@ public final class InputManager {
         CGEvent.tapEnable(tap: eventTap, enable: true)
         #else
         print("InputManager stub active (non-macOS environment)")
+        #endif
+    }
+
+    public func stop() {
+        #if os(macOS)
+        if let eventTap {
+            CGEvent.tapEnable(tap: eventTap, enable: false)
+        }
+
+        if let runLoopSource {
+            CFRunLoopRemoveSource(CFRunLoopGetCurrent(), runLoopSource, .commonModes)
+        }
+
+        runLoopSource = nil
+        eventTap = nil
         #endif
     }
 
