@@ -131,7 +131,7 @@ final class OverlayControllerTests: XCTestCase {
         XCTAssertEqual(refined, GridRect(x: 0, y: 25, width: 10, height: 25))
         XCTAssertEqual(performer.movedPoints.last, GridPoint(x: 5, y: 37.5))
         XCTAssertTrue(controller.stateSnapshot.isZoomVisible)
-        XCTAssertEqual(zoom.zoomScale, 1.5)
+        XCTAssertEqual(zoom.zoomScale, 2)
     }
 
     func testSubsequentRefinementsIncreaseZoomScale() {
@@ -148,7 +148,7 @@ final class OverlayControllerTests: XCTestCase {
         _ = controller.handleKey("q")
         _ = controller.handleKey("w")
 
-        XCTAssertEqual(zoom.zoomScale, 2.0)
+        XCTAssertEqual(zoom.zoomScale, 2.5)
         XCTAssertEqual(performer.movedPoints.count, 2)
     }
 

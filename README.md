@@ -11,8 +11,8 @@ to capture double-Cmd activation and routes key presses into the `InputManager`.
 overlay windows span each connected `NSScreen` to visualise the grid refinement and
 highlight the current target. Grid rows follow the keyboard layout from top to bottom so the
 highlight tracks the expected key column and row. Each grid cell is labelled with its keyboard key using a translucent fill so you can map inputs to tiles without obscuring the screen. A full-screen zoom preview now captures a live snapshot of the
-active region (when Screen Recording permission is granted) so you can see exactly where a
-click will land as you refine the grid. The preview only appears after the first refinement, locks to the display that owns the
+active region (when Screen Recording permission is granted) using true pinch-to-zoom behavior—the target point
+stays fixed at its screen position while everything scales around it, exactly like zooming on a phone. The preview only appears after the first refinement, locks to the display that owns the
 targeted region, and zooms in by 150% on first focus (then by another 50% per refinement) so the
 destination is easy to verify without covering other overlays. Key presses are consumed while the overlay is
 active: letters refine the grid (and move the cursor to the refined centre), `Space` clicks, and `Esc` cancels.
@@ -30,7 +30,7 @@ window on every attached screen. Quit the app to tear down the tap cleanly.
 
 ### Permissions
 
-On first launch, macOS may block the event tap unless the app is allowed under **System Settings > Privacy & Security > Input Monitoring** and **Accessibility**. The app now surfaces a dialog when the tap cannot be created so you can grant the permissions and restart. The zoom window also requires **Screen Recording** permission to mirror the focused region.
+On first launch, macOS may block the event tap unless the app is allowed under **System Settings > Privacy & Security > Input Monitoring** and **Accessibility**. The app now surfaces a dialog when the tap cannot be created so you can grant the permissions and restart. The zoom window also requires **Screen Recording** permission to capture and display the screen snapshot with pinch-to-zoom behavior.
 
 ## Building and testing
 

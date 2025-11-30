@@ -10,7 +10,7 @@ public final class OverlayController {
     private var selectedSliceIndex: Int?
     private var refinementCount: Int = 0
     private var zoomScale: Double = 1.0
-    private let baseZoomScale: Double = 1.5
+    private let baseZoomScale: Double = 2.0
     private let zoomIncrement: Double = 0.5
     public var stateDidChange: ((OverlayState) -> Void)?
 
@@ -41,6 +41,7 @@ public final class OverlayController {
 
         let bounds = combinedRect(for: screens.isEmpty ? gridSlices.map { $0.screenRect } : screens)
         state.reset(rect: bounds)
+        state.gridRect = bounds
         selectedSliceIndex = gridSlices.count == 1 ? 0 : nil
         refinementCount = 0
         zoomScale = 1.0
@@ -65,24 +66,36 @@ public final class OverlayController {
         if selectedSliceIndex == nil, gridSlices.count > 1 {
             selectedSliceIndex = gridSlices.firstIndex { $0.columnRange.contains(coordinate.column) }
             if let sliceIndex = selectedSliceIndex {
-                state.currentRect = gridSlices[sliceIndex].screenRect
+                let selectedScreen = gridSlices[sliceIndex].screenRect
+                state.currentRect = selectedScreen
+                state.gridRect = selectedScreen
             }
         }
 
         let refined: GridRect?
         if let sliceIndex = selectedSliceIndex, sliceIndex < gridSlices.count {
-            refined = gridSlices[sliceIndex].layout.rect(for: key, in: state.currentRect)
+            refined = gridSlices[sliceIndex].layout.rect(for: key, in: state.gridRect)
         } else {
-            refined = gridLayout.rect(for: key, in: state.currentRect)
+            refined = gridLayout.rect(for: key, in: state.gridRect)
         }
 
         guard let refined else { return nil }
 
         state.currentRect = refined
+        state.gridRect = refined
         refinementCount += 1
         zoomScale = baseZoomScale + Double(refinementCount - 1) * zoomIncrement
         state.isZoomVisible = true
-        zoomController?.update(targetRect: refined, screenRect: state.rootRect, desiredZoomFactor: zoomScale)
+        
+        // Get the screen rect that contains the refined target
+        let targetScreenRect: GridRect
+        if let sliceIndex = selectedSliceIndex, sliceIndex < gridSlices.count {
+            targetScreenRect = gridSlices[sliceIndex].screenRect
+        } else {
+            targetScreenRect = state.rootRect
+        }
+        
+        zoomController?.update(targetRect: refined, screenRect: targetScreenRect, desiredZoomFactor: zoomScale)
         mouseActionPerformer.moveCursor(to: state.targetPoint)
         notifyStateChange()
         return refined

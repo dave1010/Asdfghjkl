@@ -27,7 +27,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var screenObserver: NSObjectProtocol?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        let snapshotProvider = CGWindowListSnapshotProvider()
+        let snapshotProvider = CGWindowListSnapshotProvider(
+            excludedWindowIDsProvider: { [weak self] in
+                self?.overlayWindows.compactMap { $0.windowID } ?? []
+            }
+        )
         zoomController = ZoomController(initialRect: .defaultScreen, snapshotProvider: snapshotProvider)
         overlayController = OverlayController(
             gridLayout: gridLayout,
@@ -77,6 +81,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func handleStateChange(_ state: OverlayState) {
         overlayVisualModel.apply(state: state)
+        
+        // Sync zoom properties to overlay model
+        if state.isZoomVisible {
+            overlayVisualModel.updateZoom(
+                scale: zoomController.zoomScale,
+                offset: zoomController.zoomOffset,
+                screenRect: zoomController.screenRect
+            )
+        }
+        
         if state.isActive {
             overlayWindows.forEach { $0.show() }
             if state.isZoomVisible {

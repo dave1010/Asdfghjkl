@@ -10,6 +10,12 @@ final class OverlayWindowController {
     private let model: OverlayVisualModel
     private let gridSlice: GridSlice
     private var window: NSWindow?
+    
+    var windowID: CGWindowID? {
+        guard let window else { return nil }
+        let windowNumber = window.windowNumber
+        return windowNumber >= 0 ? CGWindowID(windowNumber) : nil
+    }
 
     init(screen: NSScreen, model: OverlayVisualModel, gridSlice: GridSlice) {
         self.screen = screen

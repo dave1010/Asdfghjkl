@@ -13,15 +13,43 @@ public protocol ZoomSnapshotProviding {
 }
 
 public struct CGWindowListSnapshotProvider: ZoomSnapshotProviding {
-    public init() {}
+    private let excludedWindowIDsProvider: (() -> [CGWindowID])?
+    
+    public init(excludedWindowIDsProvider: (() -> [CGWindowID])? = nil) {
+        self.excludedWindowIDsProvider = excludedWindowIDsProvider
+    }
 
     public func capture(screen: GridRect) -> CGImage? {
         let cgRect = CGRect(x: screen.origin.x, y: screen.origin.y, width: screen.size.x, height: screen.size.y)
-        return CGWindowListCreateImage(cgRect, .optionOnScreenOnly, kCGNullWindowID, [.bestResolution, .boundsIgnoreFraming])
+        
+        // If we have window IDs to exclude, capture everything below the topmost excluded window
+        // This automatically excludes all windows at or above that level
+        if let windowIDs = excludedWindowIDsProvider?(), let topWindowID = windowIDs.first {
+            return CGWindowListCreateImage(
+                cgRect,
+                .optionOnScreenBelowWindow,
+                topWindowID,
+                [.bestResolution, .boundsIgnoreFraming]
+            )
+        }
+        
+        // Fallback to capturing everything on screen
+        return CGWindowListCreateImage(
+            cgRect,
+            .optionOnScreenOnly,
+            kCGNullWindowID,
+            [.bestResolution, .boundsIgnoreFraming]
+        )
     }
 }
 #endif
 
+/// Controls zoom behavior for the overlay, implementing pinch-to-zoom semantics.
+///
+/// The zoom controller captures a snapshot of the entire screen and calculates
+/// scale and offset transforms to create a pinch-to-zoom effect where the target
+/// area appears centered and magnified. This is not a magnifier window but rather
+/// scales the entire screen content as if you had zoomed into that portion.
 public final class ZoomController: ObservableObject {
     #if canImport(Combine)
     @Published public private(set) var targetRect: GridRect
@@ -61,19 +89,43 @@ public final class ZoomController: ObservableObject {
         self.targetRect = targetRect
         self.screenRect = screenRect
         
-        // Calculate zoom scale to make the target rectangle appear desiredZoomFactor times larger
+        // Scale the entire screen content by the desired zoom factor
+        // This mimics pinch-to-zoom behavior on mobile devices
         self.zoomScale = desiredZoomFactor
         
-        // Calculate offset to center the target rectangle in the zoomed view
-        // When zoomed, the target's center should remain at the same screen position
+        // Calculate offset for true pinch-to-zoom: the target center stays at its screen position
+        // The target center in screen-relative coordinates
         let targetCenterX = targetRect.midX - screenRect.minX
         let targetCenterY = targetRect.midY - screenRect.minY
         
-        // After scaling, we want the target center to stay in place
-        // offset = (target_center * scale) - target_center
+        // When we scale from top-left by zoomScale, point (x,y) moves to (x*scale, y*scale)
+        // To keep the target center at its original position, we need to offset by:
+        // targetCenter * (scale - 1)
+        // This compensates for the scaling displacement while keeping the point fixed
+        let idealOffsetX = targetCenterX * (zoomScale - 1)
+        let idealOffsetY = targetCenterY * (zoomScale - 1)
+        
+        // Clamp the offset to prevent zoomed content from going off-screen
+        // We want the target rect boundaries to stay within screen bounds after zooming.
+        // After transform: screen_pos = source_pos * scale - offset
+        // Target edges in screen-relative coordinates:
+        let targetLeftX = targetRect.minX - screenRect.minX
+        let targetRightX = targetRect.minX + targetRect.width - screenRect.minX
+        let targetTopY = targetRect.minY - screenRect.minY
+        let targetBottomY = targetRect.minY + targetRect.height - screenRect.minY
+        
+        // Clamp constraints:
+        // - Left edge: targetLeftX * scale - offset >= 0 → offset <= targetLeftX * scale
+        // - Right edge: targetRightX * scale - offset <= screenWidth → offset >= targetRightX * scale - screenWidth
+        let minOffsetX = targetRightX * zoomScale - screenRect.width
+        let maxOffsetX = targetLeftX * zoomScale
+        
+        let minOffsetY = targetBottomY * zoomScale - screenRect.height
+        let maxOffsetY = targetTopY * zoomScale
+        
         self.zoomOffset = GridPoint(
-            x: targetCenterX * (zoomScale - 1.0),
-            y: targetCenterY * (zoomScale - 1.0)
+            x: max(minOffsetX, min(idealOffsetX, maxOffsetX)),
+            y: max(minOffsetY, min(idealOffsetY, maxOffsetY))
         )
 
         #if os(macOS)

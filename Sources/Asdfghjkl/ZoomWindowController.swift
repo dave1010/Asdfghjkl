@@ -19,7 +19,7 @@ final class ZoomWindowController {
             .receive(on: RunLoop.main)
             .sink { [weak self] rect in
                 self?.latestTargetRect = rect
-                self?.resizeWindow(for: rect)
+                self?.updateWindowPosition(for: rect)
             }
     }
 
@@ -28,7 +28,7 @@ final class ZoomWindowController {
             window = makeWindow()
         }
         window?.orderFrontRegardless()
-        resizeWindow(for: latestTargetRect)
+        updateWindowPosition(for: latestTargetRect)
     }
 
     func hide() {
@@ -49,12 +49,18 @@ final class ZoomWindowController {
         return window
     }
 
-    private func resizeWindow(for rect: GridRect) {
+    private func updateWindowPosition(for rect: GridRect) {
         guard let window else { return }
         let targetPoint = GridPoint(x: rect.midX, y: rect.midY)
 
         guard let screen = screen(containing: targetPoint) else { return }
-        window.setFrame(screen.frame, display: true)
+        
+        let screenFrame = screen.frame
+        
+        // The window should always fill the entire screen containing the target
+        // The zoom controller's snapshot and transforms are updated by OverlayController
+        // which has the correct screen rect from the grid partitioner
+        window.setFrame(screenFrame, display: true, animate: false)
     }
 
     private func screen(containing point: GridPoint) -> NSScreen? {
