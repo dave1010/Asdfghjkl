@@ -10,15 +10,15 @@ final class ZoomWindowController {
     private let zoomController: ZoomController
     private var window: NSWindow?
     private var cancellable: AnyCancellable?
-    private var latestRect: GridRect
+    private var latestTargetRect: GridRect
 
     init(zoomController: ZoomController) {
         self.zoomController = zoomController
-        self.latestRect = zoomController.observedRect
-        cancellable = zoomController.$observedRect
+        self.latestTargetRect = zoomController.targetRect
+        cancellable = zoomController.$targetRect
             .receive(on: RunLoop.main)
             .sink { [weak self] rect in
-                self?.latestRect = rect
+                self?.latestTargetRect = rect
                 self?.resizeWindow(for: rect)
             }
     }
@@ -28,7 +28,7 @@ final class ZoomWindowController {
             window = makeWindow()
         }
         window?.orderFrontRegardless()
-        resizeWindow(for: latestRect)
+        resizeWindow(for: latestTargetRect)
     }
 
     func hide() {

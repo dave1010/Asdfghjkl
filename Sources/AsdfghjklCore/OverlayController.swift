@@ -45,7 +45,7 @@ public final class OverlayController {
         refinementCount = 0
         zoomScale = 1.0
         state.isActive = true
-        zoomController?.update(rect: state.currentRect, zoomScale: zoomScale)
+        zoomController?.update(targetRect: state.currentRect, screenRect: bounds, desiredZoomFactor: zoomScale)
         notifyStateChange()
     }
 
@@ -82,7 +82,7 @@ public final class OverlayController {
         refinementCount += 1
         zoomScale = baseZoomScale + Double(refinementCount - 1) * zoomIncrement
         state.isZoomVisible = true
-        zoomController?.update(rect: refined, zoomScale: zoomScale)
+        zoomController?.update(targetRect: refined, screenRect: state.rootRect, desiredZoomFactor: zoomScale)
         mouseActionPerformer.moveCursor(to: state.targetPoint)
         notifyStateChange()
         return refined

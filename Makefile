@@ -6,11 +6,17 @@ build:
 	@echo "Executable built at .build/debug/Asdfghjkl"
 	@echo "Alternate CLI stub built at .build/debug/Asdfghjkl-cli"
 
+build-prod:
+	swift build --configuration release --product Asdfghjkl
+
 test:
 	swift test --parallel
 
 run: build
 	.build/debug/Asdfghjkl
+
+run-prod: build-prod
+	.build/release/Asdfghjkl
 
 clean:
 	swift package clean

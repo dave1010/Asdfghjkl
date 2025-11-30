@@ -102,8 +102,16 @@ struct ZoomPreviewView: View {
                         .resizable()
                         .interpolation(.high)
                         .aspectRatio(contentMode: .fill)
+                        .frame(
+                            width: CGFloat(zoomController.screenRect.width),
+                            height: CGFloat(zoomController.screenRect.height)
+                        )
+                        .scaleEffect(zoomController.zoomScale, anchor: .topLeading)
+                        .offset(
+                            x: -CGFloat(zoomController.zoomOffset.x),
+                            y: -CGFloat(zoomController.zoomOffset.y)
+                        )
                         .frame(width: proxy.size.width, height: proxy.size.height)
-                        .scaleEffect(zoomController.zoomScale, anchor: .center)
                         .clipped()
                         .overlay(alignment: .topLeading) {
                             Text("\(Int(zoomController.zoomScale * 100))%")

@@ -23,10 +23,10 @@ final class OverlayControllerTests: XCTestCase {
 
         controller.start()
         controller.handleKey("q")
-        updates.append(zoom.observedRect)
+        updates.append(zoom.targetRect)
 
         controller.handleKey("w")
-        updates.append(zoom.observedRect)
+        updates.append(zoom.targetRect)
 
         XCTAssertEqual(updates.count, 2)
         XCTAssertEqual(updates[0], GridRect(x: 0, y: 25, width: 10, height: 25))
