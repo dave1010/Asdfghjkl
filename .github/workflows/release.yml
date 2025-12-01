@@ -1,0 +1,41 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    name: Build and create release
+    runs-on: macos-15
+    permissions:
+      contents: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Swift
+        uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: "6.2"
+
+      - name: Build release artifact
+        run: |
+          swift build --configuration release --product Asdfghjkl
+          BIN_PATH=$(swift build --configuration release --show-bin-path)
+          echo "BIN_PATH=$BIN_PATH" >> "$GITHUB_ENV"
+
+      - name: Package binary
+        run: |
+          cd "$BIN_PATH"
+          zip Asdfghjkl-macos.zip Asdfghjkl
+          mv Asdfghjkl-macos.zip $GITHUB_WORKSPACE/
+
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: Asdfghjkl-macos.zip
+          draft: false
+          prerelease: false
+          generate_release_notes: true
