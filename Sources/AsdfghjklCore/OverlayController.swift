@@ -10,8 +10,8 @@ public final class OverlayController {
     private var selectedSliceIndex: Int?
     private var refinementCount: Int = 0
     private var zoomScale: Double = 1.0
-    private let baseZoomScale: Double = 2.0
-    private let zoomIncrement: Double = 0.5
+    private let baseZoomScale: Double = 1.0
+    private let zoomIncrement: Double = 0.0
     private var history: [(rect: GridRect, sliceIndex: Int?, refinementCount: Int)] = []
     public var stateDidChange: ((OverlayState) -> Void)?
 
