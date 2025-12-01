@@ -141,6 +141,60 @@ final class OverlayControllerTests: XCTestCase {
         XCTAssertEqual(performer.clickedPoints, [GridPoint(x: 38, y: 2.5)])
     }
     
+    func testMiddleClickDelegatesToHandlerAndDeactivates() {
+        let performer = StubMouseActionPerformer()
+        let controller = OverlayController(
+            gridLayout: GridLayout(),
+            screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 80, height: 40)] },
+            mouseActionPerformer: performer
+        )
+
+        controller.start()
+        controller.handleKey("1")
+        controller.middleClick()
+
+        XCTAssertFalse(controller.isActive)
+        XCTAssertEqual(performer.middleClickedPoints.last, GridPoint(x: 4, y: 5))
+        XCTAssertEqual(controller.targetRect, GridRect(x: 0, y: 0, width: 80, height: 40))
+    }
+    
+    func testMiddleClickIgnoredWhenInactive() {
+        let performer = StubMouseActionPerformer()
+        let controller = OverlayController(mouseActionPerformer: performer)
+
+        controller.middleClick()
+
+        XCTAssertTrue(performer.middleClickedPoints.isEmpty)
+        XCTAssertFalse(controller.isActive)
+    }
+    
+    func testRightClickDelegatesToHandlerAndDeactivates() {
+        let performer = StubMouseActionPerformer()
+        let controller = OverlayController(
+            gridLayout: GridLayout(),
+            screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 80, height: 40)] },
+            mouseActionPerformer: performer
+        )
+
+        controller.start()
+        controller.handleKey("1")
+        controller.rightClick()
+
+        XCTAssertFalse(controller.isActive)
+        XCTAssertEqual(performer.rightClickedPoints.last, GridPoint(x: 4, y: 5))
+        XCTAssertEqual(controller.targetRect, GridRect(x: 0, y: 0, width: 80, height: 40))
+    }
+    
+    func testRightClickIgnoredWhenInactive() {
+        let performer = StubMouseActionPerformer()
+        let controller = OverlayController(mouseActionPerformer: performer)
+
+        controller.rightClick()
+
+        XCTAssertTrue(performer.rightClickedPoints.isEmpty)
+        XCTAssertFalse(controller.isActive)
+    }
+    
     func testZoomOutRestoresPreviousLevel() {
         let performer = StubMouseActionPerformer()
         let controller = OverlayController(
@@ -599,6 +653,8 @@ final class OverlayControllerTests: XCTestCase {
 private final class StubMouseActionPerformer: MouseActionPerforming {
     private(set) var movedPoints: [GridPoint] = []
     private(set) var clickedPoints: [GridPoint] = []
+    private(set) var middleClickedPoints: [GridPoint] = []
+    private(set) var rightClickedPoints: [GridPoint] = []
 
     func moveCursor(to point: GridPoint) {
         movedPoints.append(point)
@@ -608,8 +664,18 @@ private final class StubMouseActionPerformer: MouseActionPerforming {
         clickedPoints.append(point)
     }
 
+    func middleClick(at point: GridPoint) {
+        middleClickedPoints.append(point)
+    }
+
+    func rightClick(at point: GridPoint) {
+        rightClickedPoints.append(point)
+    }
+
     func reset() {
         movedPoints.removeAll()
         clickedPoints.removeAll()
+        middleClickedPoints.removeAll()
+        rightClickedPoints.removeAll()
     }
 }

@@ -6,6 +6,8 @@ import CoreGraphics
 public protocol MouseActionPerforming {
     func moveCursor(to point: GridPoint)
     func click(at point: GridPoint)
+    func middleClick(at point: GridPoint)
+    func rightClick(at point: GridPoint)
 }
 
 public struct SystemMouseActionPerformer: MouseActionPerforming {
@@ -43,6 +45,58 @@ public struct SystemMouseActionPerformer: MouseActionPerforming {
         }
         #else
         print("SystemMouseActionPerformer: click at (\(point.x), \(point.y))")
+        #endif
+    }
+
+    public func middleClick(at point: GridPoint) {
+        #if os(macOS)
+        let target = CGPoint(x: point.x, y: point.y)
+
+        if let down = CGEvent(
+            mouseEventSource: nil,
+            mouseType: .otherMouseDown,
+            mouseCursorPosition: target,
+            mouseButton: .center
+        ) {
+            down.post(tap: .cghidEventTap)
+        }
+
+        if let up = CGEvent(
+            mouseEventSource: nil,
+            mouseType: .otherMouseUp,
+            mouseCursorPosition: target,
+            mouseButton: .center
+        ) {
+            up.post(tap: .cghidEventTap)
+        }
+        #else
+        print("SystemMouseActionPerformer: middle click at (\(point.x), \(point.y))")
+        #endif
+    }
+
+    public func rightClick(at point: GridPoint) {
+        #if os(macOS)
+        let target = CGPoint(x: point.x, y: point.y)
+
+        if let down = CGEvent(
+            mouseEventSource: nil,
+            mouseType: .rightMouseDown,
+            mouseCursorPosition: target,
+            mouseButton: .right
+        ) {
+            down.post(tap: .cghidEventTap)
+        }
+
+        if let up = CGEvent(
+            mouseEventSource: nil,
+            mouseType: .rightMouseUp,
+            mouseCursorPosition: target,
+            mouseButton: .right
+        ) {
+            up.post(tap: .cghidEventTap)
+        }
+        #else
+        print("SystemMouseActionPerformer: right click at (\(point.x), \(point.y))")
         #endif
     }
 }

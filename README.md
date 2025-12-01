@@ -15,6 +15,8 @@ You can also:
 
 - Tap `Backspace` to zoom back out to the previous level
 - Tap `Arrow Keys` to move the selected tile up/down/left/right by half its size
+- Tap `'` (apostrophe) to middle-click at the current position
+- Tap `\` (backslash) to right-click at the current position
 - Tap `Esc` to cancel and hide the overlay
 
 ## Why?

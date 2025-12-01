@@ -90,6 +90,14 @@ public final class InputManager {
         overlayController.click()
     }
 
+    public func handleMiddleClick() {
+        overlayController.middleClick()
+    }
+
+    public func handleRightClick() {
+        overlayController.rightClick()
+    }
+
     public func cancelOverlay() {
         overlayController.cancel()
     }
@@ -114,6 +122,16 @@ public final class InputManager {
 
         if key == " " { // Space
             handleSpacebarClick()
+            return true
+        }
+
+        if key == "'" { // Apostrophe for middle click
+            handleMiddleClick()
+            return true
+        }
+
+        if key == "\\" { // Backslash for right click
+            handleRightClick()
             return true
         }
         

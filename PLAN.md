@@ -1,6 +1,6 @@
 # Asdfghjkl
 
-- support double, right and middle clicking
+- support dragging by holding down shift while refining
 
 - space (without selecting a tile) should just click at the current mouse position
 

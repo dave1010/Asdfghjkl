@@ -127,6 +127,20 @@ public final class OverlayController {
         mouseActionPerformer.click(at: target)
         deactivate()
     }
+
+    public func middleClick() {
+        guard state.isActive else { return }
+        let target = state.targetPoint
+        mouseActionPerformer.middleClick(at: target)
+        deactivate()
+    }
+
+    public func rightClick() {
+        guard state.isActive else { return }
+        let target = state.targetPoint
+        mouseActionPerformer.rightClick(at: target)
+        deactivate()
+    }
     
     public func zoomOut() -> Bool {
         guard state.isActive else { return false }

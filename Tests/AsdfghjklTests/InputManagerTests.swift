@@ -125,11 +125,67 @@ final class InputManagerTests: XCTestCase {
         
         XCTAssertFalse(consumed)
     }
+    
+    func testApostrophePerformsMiddleClick() {
+        let performer = StubMouseActionPerformer()
+        let controller = OverlayController(
+            screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 40, height: 20)] },
+            mouseActionPerformer: performer
+        )
+        let manager = InputManager(overlayController: controller)
+
+        controller.start()
+        controller.handleKey("0")
+
+        let consumed = manager.handleKeyDown("'")
+
+        XCTAssertTrue(consumed)
+        XCTAssertFalse(controller.isActive)
+        XCTAssertEqual(performer.middleClickedPoints, [GridPoint(x: 38, y: 2.5)])
+    }
+    
+    func testBackslashPerformsRightClick() {
+        let performer = StubMouseActionPerformer()
+        let controller = OverlayController(
+            screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 40, height: 20)] },
+            mouseActionPerformer: performer
+        )
+        let manager = InputManager(overlayController: controller)
+
+        controller.start()
+        controller.handleKey("0")
+
+        let consumed = manager.handleKeyDown("\\")
+
+        XCTAssertTrue(consumed)
+        XCTAssertFalse(controller.isActive)
+        XCTAssertEqual(performer.rightClickedPoints, [GridPoint(x: 38, y: 2.5)])
+    }
+    
+    func testApostropheDoesNotConsumeWhenInactive() {
+        let controller = OverlayController()
+        let manager = InputManager(overlayController: controller)
+        
+        let consumed = manager.handleKeyDown("'")
+        
+        XCTAssertFalse(consumed)
+    }
+    
+    func testBackslashDoesNotConsumeWhenInactive() {
+        let controller = OverlayController()
+        let manager = InputManager(overlayController: controller)
+        
+        let consumed = manager.handleKeyDown("\\")
+        
+        XCTAssertFalse(consumed)
+    }
 }
 
 private final class StubMouseActionPerformer: MouseActionPerforming {
     private(set) var movedPoints: [GridPoint] = []
     private(set) var clickedPoints: [GridPoint] = []
+    private(set) var middleClickedPoints: [GridPoint] = []
+    private(set) var rightClickedPoints: [GridPoint] = []
 
     func moveCursor(to point: GridPoint) {
         movedPoints.append(point)
@@ -137,5 +193,13 @@ private final class StubMouseActionPerformer: MouseActionPerforming {
 
     func click(at point: GridPoint) {
         clickedPoints.append(point)
+    }
+
+    func middleClick(at point: GridPoint) {
+        middleClickedPoints.append(point)
+    }
+
+    func rightClick(at point: GridPoint) {
+        rightClickedPoints.append(point)
     }
 }
