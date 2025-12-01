@@ -23,8 +23,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var overlayWindows: [OverlayWindowController] = []
     private var screenRects: [GridRect] = [.defaultScreen]
     private var screenObserver: NSObjectProtocol?
+    private var statusItem: NSStatusItem?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        setupMenuBar()
+        
         overlayController = OverlayController(
             gridLayout: gridLayout,
             screenBoundsProvider: { [weak self] in
@@ -58,6 +61,40 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         rebuildOverlayWindows()
         inputManager.start()
+    }
+    
+    private func setupMenuBar() {
+        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        
+        if let button = statusItem?.button {
+            button.title = "⌨️"
+        }
+        
+        let menu = NSMenu()
+        
+        menu.addItem(NSMenuItem(
+            title: "About Asdfghjkl",
+            action: #selector(showAbout),
+            keyEquivalent: ""
+        ))
+        
+        menu.addItem(NSMenuItem.separator())
+        
+        menu.addItem(NSMenuItem(
+            title: "Quit",
+            action: #selector(quitApp),
+            keyEquivalent: "q"
+        ))
+        
+        statusItem?.menu = menu
+    }
+    
+    @objc private func showAbout() {
+        NSApplication.shared.orderFrontStandardAboutPanel(nil)
+    }
+    
+    @objc private func quitApp() {
+        NSApplication.shared.terminate(nil)
     }
 
     func applicationWillTerminate(_ notification: Notification) {
