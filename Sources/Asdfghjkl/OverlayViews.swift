@@ -5,7 +5,6 @@ import AsdfghjklCore
 
 struct OverlayGridView: View {
     @ObservedObject var model: OverlayVisualModel
-    @ObservedObject var zoomController: ZoomController
     let screen: NSScreen
     let gridSlice: GridSlice
 
@@ -14,7 +13,7 @@ struct OverlayGridView: View {
             ZStack(alignment: .topLeading) {
                 Color.black.opacity(model.isActive ? 0.15 : 0)
                 
-                // Grid content with optional zoom transform
+                // Grid content
                 ZStack(alignment: .topLeading) {
                     if model.isGridVisible {
                         gridLines(in: proxy.size)
@@ -22,11 +21,6 @@ struct OverlayGridView: View {
                     }
                     highlightView(in: proxy.size)
                 }
-                .modifier(ZoomTransformModifier(
-                    isZoomVisible: model.isZoomVisible,
-                    zoomScale: zoomController.zoomScale,
-                    zoomOffset: zoomController.zoomOffset
-                ))
             }
             .opacity(model.isActive ? 1 : 0)
             .animation(.easeInOut(duration: 0.12), value: model.isActive)
@@ -129,82 +123,6 @@ struct OverlayGridView: View {
         let normalizedHeight = intersection.height / screenFrame.height * viewSize.height
 
         return CGRect(x: normalizedX, y: normalizedY, width: normalizedWidth, height: normalizedHeight)
-    }
-}
-
-/// Applies zoom transformation when enabled.
-private struct ZoomTransformModifier: ViewModifier {
-    let isZoomVisible: Bool
-    let zoomScale: Double
-    let zoomOffset: GridPoint
-    
-    func body(content: Content) -> some View {
-        if isZoomVisible {
-            content
-                .scaleEffect(zoomScale, anchor: .topLeading)
-                .offset(
-                    x: -CGFloat(zoomOffset.x),
-                    y: -CGFloat(zoomOffset.y)
-                )
-                .animation(.easeOut(duration: 0.3), value: zoomScale)
-                .animation(.easeOut(duration: 0.3), value: zoomOffset)
-        } else {
-            content
-        }
-    }
-}
-
-/// Displays the zoomed screen snapshot using pinch-to-zoom behavior.
-///
-/// The view fills the entire screen and displays a scaled snapshot where
-/// the target point stays fixed at its original screen position, just like
-/// pinch-to-zoom on a phone: if you zoom 200% at point (x,y), that point
-/// stays at (x,y) while everything else scales around it.
-struct ZoomPreviewView: View {
-    @ObservedObject var zoomController: ZoomController
-
-    var body: some View {
-        GeometryReader { proxy in
-            ZStack(alignment: .topLeading) {
-                Color.black.opacity(0.5)
-                if let snapshot = zoomController.latestSnapshot {
-                    // Display the full screen snapshot
-                    Image(decorative: snapshot, scale: 1.0)
-                        .resizable()
-                        .interpolation(.high)  // Uses Lanczos resampling for best quality
-                        .aspectRatio(contentMode: .fill)
-                        .frame(
-                            width: CGFloat(zoomController.screenRect.width),
-                            height: CGFloat(zoomController.screenRect.height)
-                        )
-                        // Scale from top-leading, then offset to keep target point fixed
-                        // This creates true pinch-to-zoom: the target center stays at
-                        // its original screen position as everything scales around it
-                        .scaleEffect(zoomController.zoomScale, anchor: .topLeading)
-                        .offset(
-                            x: -CGFloat(zoomController.zoomOffset.x),
-                            y: -CGFloat(zoomController.zoomOffset.y)
-                        )
-                        .animation(.easeOut(duration: 0.3), value: zoomController.zoomScale)
-                        .animation(.easeOut(duration: 0.3), value: zoomController.zoomOffset)
-                        .clipped()
-                        .overlay(alignment: .topLeading) {
-                            Text("\(Int(zoomController.zoomScale * 100))%")
-                                .font(.caption)
-                                .padding(8)
-                                .background(.ultraThinMaterial)
-                                .clipShape(RoundedRectangle(cornerRadius: 8))
-                                .padding()
-                        }
-                } else {
-                    ProgressView()
-                        .progressViewStyle(.circular)
-                        .scaleEffect(1.2)
-                }
-            }
-            .frame(width: proxy.size.width, height: proxy.size.height, alignment: .topLeading)
-            .ignoresSafeArea()
-        }
     }
 }
 #endif

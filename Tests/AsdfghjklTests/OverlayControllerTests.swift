@@ -12,27 +12,6 @@ final class OverlayControllerTests: XCTestCase {
         XCTAssertEqual(controller.targetRect, expectedRect)
     }
 
-    func testRefinementUpdatesZoomController() {
-        var updates: [GridRect] = []
-        let zoom = ZoomController(initialRect: .defaultScreen)
-        let controller = OverlayController(
-            gridLayout: GridLayout(),
-            screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 100, height: 100)] },
-            zoomController: zoom
-        )
-
-        controller.start()
-        controller.handleKey("q")
-        updates.append(zoom.targetRect)
-
-        controller.handleKey("w")
-        updates.append(zoom.targetRect)
-
-        XCTAssertEqual(updates.count, 2)
-        XCTAssertEqual(updates[0], GridRect(x: 0, y: 25, width: 10, height: 25))
-        XCTAssertEqual(updates[1], GridRect(x: 1, y: 31.25, width: 1, height: 6.25))
-    }
-
     func testClickDelegatesToHandlerAndDeactivates() {
         let performer = StubMouseActionPerformer()
         let controller = OverlayController(
@@ -113,34 +92,27 @@ final class OverlayControllerTests: XCTestCase {
         XCTAssertEqual(secondRefinement, GridRect(x: 200, y: 37.5, width: 4, height: 6.25))
     }
 
-    func testFirstRefinementShowsZoomAndMovesCursor() {
+    func testFirstRefinementMovesCursor() {
         let performer = StubMouseActionPerformer()
-        let zoom = ZoomController()
         let controller = OverlayController(
             gridLayout: GridLayout(),
             screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 100, height: 100)] },
-            zoomController: zoom,
             mouseActionPerformer: performer
         )
 
         controller.start()
-        XCTAssertFalse(controller.stateSnapshot.isZoomVisible)
 
         let refined = controller.handleKey("q")
 
         XCTAssertEqual(refined, GridRect(x: 0, y: 25, width: 10, height: 25))
         XCTAssertEqual(performer.movedPoints.last, GridPoint(x: 5, y: 37.5))
-        XCTAssertTrue(controller.stateSnapshot.isZoomVisible)
-        XCTAssertEqual(zoom.zoomScale, 1.0)
     }
 
-    func testSubsequentRefinementsIncreaseZoomScale() {
+    func testSubsequentRefinementsMovesCursor() {
         let performer = StubMouseActionPerformer()
-        let zoom = ZoomController()
         let controller = OverlayController(
             gridLayout: GridLayout(),
             screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 100, height: 100)] },
-            zoomController: zoom,
             mouseActionPerformer: performer
         )
 
@@ -148,7 +120,6 @@ final class OverlayControllerTests: XCTestCase {
         _ = controller.handleKey("q")
         _ = controller.handleKey("w")
 
-        XCTAssertEqual(zoom.zoomScale, 1.0)
         XCTAssertEqual(performer.movedPoints.count, 2)
     }
 
@@ -172,11 +143,9 @@ final class OverlayControllerTests: XCTestCase {
     
     func testZoomOutRestoresPreviousLevel() {
         let performer = StubMouseActionPerformer()
-        let zoom = ZoomController()
         let controller = OverlayController(
             gridLayout: GridLayout(),
             screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 100, height: 100)] },
-            zoomController: zoom,
             mouseActionPerformer: performer
         )
 
@@ -191,20 +160,16 @@ final class OverlayControllerTests: XCTestCase {
         
         XCTAssertNotEqual(firstRect, secondRect)
         XCTAssertNotEqual(secondRect, thirdRect)
-        XCTAssertEqual(zoom.zoomScale, 1.0)
         
         let zoomed = controller.zoomOut()
         
         XCTAssertTrue(zoomed)
         XCTAssertEqual(controller.targetRect, secondRect)
-        XCTAssertEqual(zoom.zoomScale, 1.0)
         
         let zoomedAgain = controller.zoomOut()
         
         XCTAssertTrue(zoomedAgain)
         XCTAssertEqual(controller.targetRect, firstRect)
-        XCTAssertEqual(zoom.zoomScale, 1.0)
-        XCTAssertFalse(controller.stateSnapshot.isZoomVisible)
         
         // One more zoom out should cancel the overlay
         let zoomedToCancel = controller.zoomOut()
@@ -328,7 +293,6 @@ final class OverlayControllerTests: XCTestCase {
         // Zoom out again - should restore to full screen overlay on both screens
         _ = controller.zoomOut()
         XCTAssertEqual(controller.targetRect, combinedBounds, "Should restore combined bounds of both screens")
-        XCTAssertFalse(controller.stateSnapshot.isZoomVisible, "Zoom should be hidden at full screen")
         
         // One more zoom out should cancel the overlay
         _ = controller.zoomOut()

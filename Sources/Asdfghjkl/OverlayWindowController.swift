@@ -8,7 +8,6 @@ import AsdfghjklCore
 final class OverlayWindowController {
     private let screen: NSScreen
     private let model: OverlayVisualModel
-    private let zoomController: ZoomController
     private let gridSlice: GridSlice
     private var window: NSWindow?
     
@@ -18,10 +17,9 @@ final class OverlayWindowController {
         return windowNumber >= 0 ? CGWindowID(windowNumber) : nil
     }
 
-    init(screen: NSScreen, model: OverlayVisualModel, zoomController: ZoomController, gridSlice: GridSlice) {
+    init(screen: NSScreen, model: OverlayVisualModel, gridSlice: GridSlice) {
         self.screen = screen
         self.model = model
-        self.zoomController = zoomController
         self.gridSlice = gridSlice
     }
 
@@ -40,7 +38,6 @@ final class OverlayWindowController {
     private func makeWindow() -> NSWindow {
         let overlayView = OverlayGridView(
             model: model,
-            zoomController: zoomController,
             screen: screen,
             gridSlice: gridSlice
         )

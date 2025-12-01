@@ -1,40 +1,60 @@
 # Asdfghjkl
 
-Use the keyboard instead of the mouse.
+> **The Mouse is Dead. Use _Asdfghjkl_ instead.**
 
-Named after the Deadmau5' song Asdfghjkl, as the mouse is dead and you use a Qwerty keyboard instead.
+Named after the [Deadmau5 song Asdfghjkl](https://www.youtube.com/watch?v=1aP910O2774)
 
-**Double tap Cmd to see an overlay on your screen. Tap a corresponding key to select that area, then tap again (and again) to drill down. Tap space to click the refined target. Press backspace to zoom back out to the previous level.**
+## What does it do?
 
-The package now ships a SwiftUI/AppKit macOS app lifecycle that installs a global CGEvent tap
-to capture double-Cmd activation and routes key presses into the `InputManager`. Borderless
-overlay windows span each connected `NSScreen` to visualise the grid refinement and
-highlight the current target. Grid rows follow the keyboard layout from top to bottom so the
-highlight tracks the expected key column and row. Each grid cell is labelled with its keyboard key using a translucent fill so you can map inputs to tiles without obscuring the screen. A full-screen zoom preview now captures a live snapshot of the
-active region (when Screen Recording permission is granted) using true pinch-to-zoom behavior—the target point
-stays fixed at its screen position while everything scales around it, exactly like zooming on a phone. The preview only appears after the first refinement, locks to the display that owns the
-targeted region, and zooms in by 150% on first focus (then by another 50% per refinement) so the
-destination is easy to verify without covering other overlays. Key presses are consumed while the overlay is
-active: letters refine the grid (and move the cursor to the refined centre), `Space` clicks, `Backspace` zooms out one level, and `Esc` cancels.
+1. Double tap Cmd to see a grid on your screen.
+2. Tap a corresponding key to move the mouse to that area.
+3. Tap again (and again) to drill down.
+4. Tap `Space` at any point to click the mouse.
+
+You can also:
+
+- Tap `Backspace` to zoom back out to the previous level
+- Tap `Esc` to cancel and hide the overlay
+
+## Why?
+
+Mice are slow and a long way away from the keyboard.
+
+## Inspiration
+
+- [mouseless](https://mouseless.click/)
+- [mousemaster](https://github.com/petoncle/mousemaster)
+- [warpd](https://github.com/rvaiya/warpd)
+- [scoot](https://github.com/mjrusso/scoot)
+- [shortcat](https://shortcat.app/)
+- [superkey](https://superkey.app/)
+- [homerow](https://www.homerow.app/)
+- [httpsvimac](https://github.com/nchudleigh/vimac)
+
+## How does it work?
+
+Read [ARCHITECTURE.md](ARCHITECTURE.md) for a deeper look at the current components and runtime flow.
+
+### Multiple displays
 
 On multi-display setups, the 4×10 grid is divided horizontally across all overlay windows so
 the first keypress selects a screen by column range (e.g. `Q…T` on screen 1, `Y…P` on screen
 2). Refinements after the first key keep using the per-screen slice, keeping labels and hit
 testing aligned with the display that owns the tapped keys.
 
-Read [ARCHITECTURE.md](ARCHITECTURE.md) for a deeper look at the current components and runtime flow.
+### Permissions
 
 The macOS app installs the global CGEvent tap on launch (requires Input Monitoring and
 Accessibility permissions) and rebuilds overlay windows whenever displays change, keeping a
 window on every attached screen. Quit the app to tear down the tap cleanly.
 
-### Permissions
+On first launch, macOS may block the event tap unless the app is allowed under **System Settings > Privacy & Security > Input Monitoring** and **Accessibility**. The app now surfaces a dialog when the tap cannot be created so you can grant the permissions and restart.
 
-On first launch, macOS may block the event tap unless the app is allowed under **System Settings > Privacy & Security > Input Monitoring** and **Accessibility**. The app now surfaces a dialog when the tap cannot be created so you can grant the permissions and restart. The zoom window also requires **Screen Recording** permission to capture and display the screen snapshot with pinch-to-zoom behavior.
+## Development
 
-## Building and testing
+`Asdfghjkl` is built with Swift 6.2 and targets macOS 14+.
 
-You can build and run the placeholder executable with the provided `Makefile`:
+You can build and run `Asdfghjkl` with the provided `Makefile`:
 
 ```sh
 make build   # swift build + direct swiftc compile for quick iteration
@@ -42,13 +62,7 @@ make test    # runs the GridLayout and overlay state tests
 make run     # runs the executable from .build/debug
 ```
 
-To keep the binary alive for a quick state-machine demo, run with `ASDFGHJKL_DEMO=1`:
-
-```sh
-ASDFGHJKL_DEMO=1 .build/debug/Asdfghjkl
-```
-
-## Continuous integration
+### Continuous integration
 
 GitHub Actions keep the package healthy and provide a downloadable binary:
 

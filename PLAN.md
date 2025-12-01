@@ -2,8 +2,6 @@
 
 Tiny swift app that lets the user use the keyboard to move and click the mouse.
 
-- lots of legacy code around zooming and creating snapshot overlays. this can be removed.
-
 - arrow keys should move the selected tile up/down/left/right by half it's width/height respectively (and also move the mouse position)
 
 - support double, right and middle clicking
@@ -14,4 +12,6 @@ Tiny swift app that lets the user use the keyboard to move and click the mouse.
 
 - menu bar icon with About window. explain basic controls
 
+remove ASDFGHJKL_DEMO
 
+see if we can remove any permissions

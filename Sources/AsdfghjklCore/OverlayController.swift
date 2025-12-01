@@ -4,26 +4,20 @@ public final class OverlayController {
     private var state: OverlayState
     private let gridLayout: GridLayout
     private let screenBoundsProvider: () -> [GridRect]
-    private let zoomController: ZoomController?
     private let mouseActionPerformer: MouseActionPerforming
     private var gridSlices: [GridSlice] = []
     private var selectedSliceIndex: Int?
     private var refinementCount: Int = 0
-    private var zoomScale: Double = 1.0
-    private let baseZoomScale: Double = 1.0
-    private let zoomIncrement: Double = 0.0
     private var history: [(rect: GridRect, sliceIndex: Int?, refinementCount: Int)] = []
     public var stateDidChange: ((OverlayState) -> Void)?
 
     public init(
         gridLayout: GridLayout = GridLayout(),
         screenBoundsProvider: @escaping () -> [GridRect] = { [.defaultScreen] },
-        zoomController: ZoomController? = nil,
         mouseActionPerformer: MouseActionPerforming = SystemMouseActionPerformer()
     ) {
         self.gridLayout = gridLayout
         self.screenBoundsProvider = screenBoundsProvider
-        self.zoomController = zoomController
         self.mouseActionPerformer = mouseActionPerformer
         self.state = OverlayState()
     }
@@ -59,9 +53,7 @@ public final class OverlayController {
         state.isActive = true
         selectedSliceIndex = gridSlices.count == 1 ? 0 : nil
         refinementCount = 0
-        zoomScale = 1.0
         history = []
-        updateZoom()
     }
     
     private func combinedBounds(for screens: [GridRect]) -> GridRect {
@@ -117,10 +109,8 @@ public final class OverlayController {
         
         let parentRect = state.currentRect
         state.currentRect = refined
-        state.isZoomVisible = true
         refinementCount += 1
         state.isGridVisible = refinementCount < 3
-        zoomScale = baseZoomScale + Double(refinementCount - 1) * zoomIncrement
         
         // Calculate position within parent grid
         let relativeX = refined.origin.x - parentRect.origin.x
@@ -130,27 +120,7 @@ public final class OverlayController {
         print("[OverlayController]   Parent grid: \(parentRect)")
         print("[OverlayController]   Selected section: \(refined)")
         print("[OverlayController]   Position in parent: (\(relativeX), \(relativeY))")
-        print("[OverlayController]   Zoom scale: \(zoomScale)x")
-        
-        updateZoom()
     }
-    
-    private func updateZoom() {
-        let targetScreenRect = currentScreenRect()
-        zoomController?.update(
-            targetRect: state.currentRect,
-            screenRect: targetScreenRect,
-            desiredZoomFactor: zoomScale
-        )
-    }
-    
-    private func currentScreenRect() -> GridRect {
-        if let sliceIndex = selectedSliceIndex, sliceIndex < gridSlices.count {
-            return gridSlices[sliceIndex].screenRect
-        }
-        return state.rootRect
-    }
-
     public func click() {
         guard state.isActive else { return }
         let target = state.targetPoint
@@ -174,8 +144,6 @@ public final class OverlayController {
         
         if refinementCount == 0 {
             // Zooming out to the initial full-screen state
-            state.isZoomVisible = false
-            zoomScale = 1.0
             // Reset to show overlay on all screens
             selectedSliceIndex = gridSlices.count == 1 ? 0 : nil
             let screens = screenBoundsProvider()
@@ -183,15 +151,11 @@ public final class OverlayController {
             state.currentRect = bounds
             state.gridRect = bounds
             print("[OverlayController] Zoomed out to full-screen overlay on all screens")
-        } else {
-            zoomScale = baseZoomScale + Double(refinementCount - 1) * zoomIncrement
         }
         
         print("[OverlayController] Zoomed out to depth \(refinementCount)")
         print("[OverlayController]   Current rect: \(state.currentRect)")
-        print("[OverlayController]   Zoom scale: \(zoomScale)x")
         
-        updateZoom()
         mouseActionPerformer.moveCursor(to: state.targetPoint)
         notifyStateChange()
         return true
@@ -207,7 +171,6 @@ public final class OverlayController {
         state.reset(rect: state.rootRect)
         selectedSliceIndex = gridSlices.count == 1 ? 0 : nil
         refinementCount = 0
-        zoomScale = 1.0
         history = []
         notifyStateChange()
     }

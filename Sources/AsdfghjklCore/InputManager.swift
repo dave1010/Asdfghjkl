@@ -172,24 +172,16 @@ public final class InputManager {
     @MainActor
     private static func presentMissingPermissionsAlert() {
         let alert = NSAlert()
-        alert.messageText = "Enable Input Monitoring, Accessibility, and Screen Recording"
-        alert.informativeText = "Asdfghjkl needs Input Monitoring and Accessibility permissions to listen for the Cmd double-tap. Grant Screen Recording as well to enable the zoom window. Open System Settings > Privacy & Security, add Asdfghjkl under each section, then restart the app."
+        alert.messageText = "Enable Input Monitoring and Accessibility"
+        alert.informativeText = "Asdfghjkl needs Input Monitoring and Accessibility permissions to listen for the Cmd double-tap. Open System Settings > Privacy & Security, add Asdfghjkl under each section, then restart the app."
         alert.addButton(withTitle: "Open Input Monitoring")
-        alert.addButton(withTitle: "Open Screen Recording")
         alert.addButton(withTitle: "OK")
 
         let response = alert.runModal()
-        switch response {
-        case .alertFirstButtonReturn:
+        if response == .alertFirstButtonReturn {
             if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent") {
                 NSWorkspace.shared.open(url)
             }
-        case .alertSecondButtonReturn:
-            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture") {
-                NSWorkspace.shared.open(url)
-            }
-        default:
-            break
         }
     }
     #endif

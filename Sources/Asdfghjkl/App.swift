@@ -20,26 +20,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let gridLayout = AsdfghjklCore.GridLayout()
     private var overlayController: OverlayController!
     private var inputManager: InputManager!
-    private var zoomController: ZoomController!
     private var overlayWindows: [OverlayWindowController] = []
-    private var zoomWindow: ZoomWindowController?
     private var screenRects: [GridRect] = [.defaultScreen]
     private var screenObserver: NSObjectProtocol?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        let snapshotProvider = CGWindowListSnapshotProvider(
-            excludedWindowIDsProvider: { [weak self] in
-                self?.overlayWindows.compactMap { $0.windowID } ?? []
-            }
-        )
-        zoomController = ZoomController(initialRect: .defaultScreen, snapshotProvider: snapshotProvider)
         overlayController = OverlayController(
             gridLayout: gridLayout,
             screenBoundsProvider: { [weak self] in
                 guard let self else { return [.defaultScreen] }
                 return self.screenRects
-            },
-            zoomController: zoomController
+            }
         )
 
         overlayController.stateDidChange = { [weak self] state in
@@ -66,7 +57,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         rebuildOverlayWindows()
-        zoomWindow = ZoomWindowController(zoomController: zoomController)
         inputManager.start()
     }
 
@@ -76,7 +66,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         inputManager.stop()
         overlayWindows.forEach { $0.hide() }
-        zoomWindow?.hide()
     }
 
     private func handleStateChange(_ state: OverlayState) {
@@ -87,14 +76,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func updateWindowVisibility(for state: OverlayState) {
         if state.isActive {
             overlayWindows.forEach { $0.show() }
-            if state.isZoomVisible {
-                zoomWindow?.show()
-            } else {
-                zoomWindow?.hide()
-            }
         } else {
             overlayWindows.forEach { $0.hide() }
-            zoomWindow?.hide()
         }
     }
 
@@ -109,7 +92,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             OverlayWindowController(
                 screen: $0.0,
                 model: overlayVisualModel,
-                zoomController: zoomController,
                 gridSlice: $0.1
             )
         }
