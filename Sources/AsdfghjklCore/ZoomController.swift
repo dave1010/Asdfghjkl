@@ -88,48 +88,63 @@ public final class ZoomController: ObservableObject {
     public func update(targetRect: GridRect, screenRect: GridRect, desiredZoomFactor: Double) {
         self.targetRect = targetRect
         self.screenRect = screenRect
-        
-        // Scale the entire screen content by the desired zoom factor
-        // This mimics pinch-to-zoom behavior on mobile devices
         self.zoomScale = desiredZoomFactor
-        
-        // Calculate offset for true pinch-to-zoom: the target center stays at its screen position
-        // The target center in screen-relative coordinates
-        let targetCenterX = targetRect.midX - screenRect.minX
-        let targetCenterY = targetRect.midY - screenRect.minY
-        
-        // When we scale from top-left by zoomScale, point (x,y) moves to (x*scale, y*scale)
-        // To keep the target center at its original position, we need to offset by:
-        // targetCenter * (scale - 1)
-        // This compensates for the scaling displacement while keeping the point fixed
-        let idealOffsetX = targetCenterX * (zoomScale - 1)
-        let idealOffsetY = targetCenterY * (zoomScale - 1)
-        
-        // Clamp the offset to prevent zoomed content from going off-screen
-        // We want the target rect boundaries to stay within screen bounds after zooming.
-        // After transform: screen_pos = source_pos * scale - offset
-        // Target edges in screen-relative coordinates:
-        let targetLeftX = targetRect.minX - screenRect.minX
-        let targetRightX = targetRect.minX + targetRect.width - screenRect.minX
-        let targetTopY = targetRect.minY - screenRect.minY
-        let targetBottomY = targetRect.minY + targetRect.height - screenRect.minY
-        
-        // Clamp constraints:
-        // - Left edge: targetLeftX * scale - offset >= 0 → offset <= targetLeftX * scale
-        // - Right edge: targetRightX * scale - offset <= screenWidth → offset >= targetRightX * scale - screenWidth
-        let minOffsetX = targetRightX * zoomScale - screenRect.width
-        let maxOffsetX = targetLeftX * zoomScale
-        
-        let minOffsetY = targetBottomY * zoomScale - screenRect.height
-        let maxOffsetY = targetTopY * zoomScale
-        
-        self.zoomOffset = GridPoint(
-            x: max(minOffsetX, min(idealOffsetX, maxOffsetX)),
-            y: max(minOffsetY, min(idealOffsetY, maxOffsetY))
-        )
+        self.zoomOffset = calculateZoomOffset()
 
         #if os(macOS)
         latestSnapshot = snapshotProvider.capture(screen: screenRect)
         #endif
+    }
+    
+    /// Calculates zoom offset to keep target centered using pinch-to-zoom behavior.
+    ///
+    /// When scaling from top-left, point (x,y) moves to (x*scale, y*scale).
+    /// To keep the target center fixed, we offset by: targetCenter * (scale - 1).
+    /// We then clamp to prevent zoomed content from going off-screen.
+    private func calculateZoomOffset() -> GridPoint {
+        let targetCenter = targetCenterInScreenCoordinates()
+        let idealOffset = GridPoint(
+            x: targetCenter.x * (zoomScale - 1),
+            y: targetCenter.y * (zoomScale - 1)
+        )
+        return clampOffset(idealOffset)
+    }
+    
+    private func targetCenterInScreenCoordinates() -> GridPoint {
+        GridPoint(
+            x: targetRect.midX - screenRect.minX,
+            y: targetRect.midY - screenRect.minY
+        )
+    }
+    
+    /// Clamps offset so target edges stay within screen bounds after zoom.
+    /// Transform: screen_pos = source_pos * scale - offset
+    private func clampOffset(_ offset: GridPoint) -> GridPoint {
+        let targetEdges = targetEdgesInScreenCoordinates()
+        
+        // Clamping constraints:
+        // Left edge: targetLeftX * scale - offset >= 0 → offset <= targetLeftX * scale
+        // Right edge: targetRightX * scale - offset <= screenWidth → offset >= targetRightX * scale - screenWidth
+        let xRange = (
+            min: targetEdges.right * zoomScale - screenRect.width,
+            max: targetEdges.left * zoomScale
+        )
+        let yRange = (
+            min: targetEdges.bottom * zoomScale - screenRect.height,
+            max: targetEdges.top * zoomScale
+        )
+        
+        return GridPoint(
+            x: max(xRange.min, min(offset.x, xRange.max)),
+            y: max(yRange.min, min(offset.y, yRange.max))
+        )
+    }
+    
+    private func targetEdgesInScreenCoordinates() -> (left: Double, right: Double, top: Double, bottom: Double) {
+        let left = targetRect.minX - screenRect.minX
+        let right = targetRect.minX + targetRect.width - screenRect.minX
+        let top = targetRect.minY - screenRect.minY
+        let bottom = targetRect.minY + targetRect.height - screenRect.minY
+        return (left, right, top, bottom)
     }
 }

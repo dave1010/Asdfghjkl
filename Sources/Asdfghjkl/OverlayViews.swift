@@ -5,6 +5,7 @@ import AsdfghjklCore
 
 struct OverlayGridView: View {
     @ObservedObject var model: OverlayVisualModel
+    @ObservedObject var zoomController: ZoomController
     let screen: NSScreen
     let gridSlice: GridSlice
 
@@ -13,47 +14,17 @@ struct OverlayGridView: View {
             ZStack(alignment: .topLeading) {
                 Color.black.opacity(model.isActive ? 0.15 : 0)
                 
-                // Apply zoom transform when zoom is visible
-                if model.isZoomVisible {
-                    ZStack(alignment: .topLeading) {
-                        gridLines(in: proxy.size)
-                        gridLabels(in: proxy.size)
-                        
-                        if let rect = highlightRect(in: proxy.size) {
-                            RoundedRectangle(cornerRadius: 6)
-                                .stroke(Color.accentColor, lineWidth: 2)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 6)
-                                        .fill(Color.accentColor.opacity(0.12))
-                                )
-                                .frame(width: rect.width, height: rect.height)
-                                .position(x: rect.midX, y: rect.midY)
-                                .animation(.easeInOut(duration: 0.1), value: rect)
-                        }
-                    }
-                    .scaleEffect(model.zoomScale, anchor: .topLeading)
-                    .offset(
-                        x: -CGFloat(model.zoomOffset.x),
-                        y: -CGFloat(model.zoomOffset.y)
-                    )
-                    .animation(.easeOut(duration: 0.3), value: model.zoomScale)
-                    .animation(.easeOut(duration: 0.3), value: model.zoomOffset)
-                } else {
+                // Grid content with optional zoom transform
+                ZStack(alignment: .topLeading) {
                     gridLines(in: proxy.size)
                     gridLabels(in: proxy.size)
-                    
-                    if let rect = highlightRect(in: proxy.size) {
-                        RoundedRectangle(cornerRadius: 6)
-                            .stroke(Color.accentColor, lineWidth: 2)
-                            .background(
-                                RoundedRectangle(cornerRadius: 6)
-                                    .fill(Color.accentColor.opacity(0.12))
-                            )
-                            .frame(width: rect.width, height: rect.height)
-                            .position(x: rect.midX, y: rect.midY)
-                            .animation(.easeInOut(duration: 0.1), value: rect)
-                    }
+                    highlightView(in: proxy.size)
                 }
+                .modifier(ZoomTransformModifier(
+                    isZoomVisible: model.isZoomVisible,
+                    zoomScale: zoomController.zoomScale,
+                    zoomOffset: zoomController.zoomOffset
+                ))
             }
             .opacity(model.isActive ? 1 : 0)
             .animation(.easeInOut(duration: 0.12), value: model.isActive)
@@ -62,6 +33,21 @@ struct OverlayGridView: View {
         .allowsHitTesting(false)
     }
 
+    @ViewBuilder
+    private func highlightView(in size: CGSize) -> some View {
+        if let rect = highlightRect(in: size) {
+            RoundedRectangle(cornerRadius: 6)
+                .stroke(Color.accentColor, lineWidth: 2)
+                .background(
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(Color.accentColor.opacity(0.12))
+                )
+                .frame(width: rect.width, height: rect.height)
+                .position(x: rect.midX, y: rect.midY)
+                .animation(.easeInOut(duration: 0.1), value: rect)
+        }
+    }
+    
     private func gridLines(in size: CGSize) -> some View {
         Path { path in
             guard let gridArea = gridAreaInView(viewSize: size) else { return }
@@ -141,6 +127,28 @@ struct OverlayGridView: View {
         let normalizedHeight = intersection.height / screenFrame.height * viewSize.height
 
         return CGRect(x: normalizedX, y: normalizedY, width: normalizedWidth, height: normalizedHeight)
+    }
+}
+
+/// Applies zoom transformation when enabled.
+private struct ZoomTransformModifier: ViewModifier {
+    let isZoomVisible: Bool
+    let zoomScale: Double
+    let zoomOffset: GridPoint
+    
+    func body(content: Content) -> some View {
+        if isZoomVisible {
+            content
+                .scaleEffect(zoomScale, anchor: .topLeading)
+                .offset(
+                    x: -CGFloat(zoomOffset.x),
+                    y: -CGFloat(zoomOffset.y)
+                )
+                .animation(.easeOut(duration: 0.3), value: zoomScale)
+                .animation(.easeOut(duration: 0.3), value: zoomOffset)
+        } else {
+            content
+        }
     }
 }
 

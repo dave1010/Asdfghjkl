@@ -29,6 +29,7 @@ public struct GridRect: Equatable, Sendable {
     public var height: Double { size.y }
     public var midX: Double { origin.x + size.x / 2 }
     public var midY: Double { origin.y + size.y / 2 }
+    public var center: GridPoint { GridPoint(x: midX, y: midY) }
 
     public func subdividing(rows: Int, columns: Int, row: Int, column: Int) -> GridRect? {
         guard rows > 0, columns > 0, row >= 0, column >= 0, row < rows, column < columns else {

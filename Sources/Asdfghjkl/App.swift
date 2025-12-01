@@ -81,16 +81,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func handleStateChange(_ state: OverlayState) {
         overlayVisualModel.apply(state: state)
-        
-        // Sync zoom properties to overlay model
-        if state.isZoomVisible {
-            overlayVisualModel.updateZoom(
-                scale: zoomController.zoomScale,
-                offset: zoomController.zoomOffset,
-                screenRect: zoomController.screenRect
-            )
-        }
-        
+        updateWindowVisibility(for: state)
+    }
+    
+    private func updateWindowVisibility(for state: OverlayState) {
         if state.isActive {
             overlayWindows.forEach { $0.show() }
             if state.isZoomVisible {
@@ -112,7 +106,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let gridSlices = slices.isEmpty ? GridPartitioner.slices(for: [.defaultScreen], layout: gridLayout) : slices
 
         overlayWindows = zip(screens, gridSlices).map {
-            OverlayWindowController(screen: $0.0, model: overlayVisualModel, gridSlice: $0.1)
+            OverlayWindowController(
+                screen: $0.0,
+                model: overlayVisualModel,
+                zoomController: zoomController,
+                gridSlice: $0.1
+            )
         }
 
         if overlayController.isActive {

@@ -5,37 +5,36 @@ import AppKit
 import Combine
 import AsdfghjklCore
 
+/// Manages a borderless window that displays the zoom preview.
+/// The window fills the entire screen containing the target point.
 @MainActor
 final class ZoomWindowController {
     private let zoomController: ZoomController
     private var window: NSWindow?
     private var cancellable: AnyCancellable?
-    private var latestTargetRect: GridRect
 
     init(zoomController: ZoomController) {
         self.zoomController = zoomController
-        self.latestTargetRect = zoomController.targetRect
-        cancellable = zoomController.$targetRect
+        self.cancellable = zoomController.$targetRect
             .receive(on: RunLoop.main)
             .sink { [weak self] rect in
-                self?.latestTargetRect = rect
-                self?.updateWindowPosition(for: rect)
+                self?.updateWindowFrame(for: rect)
             }
     }
 
     func show() {
         if window == nil {
-            window = makeWindow()
+            window = createWindow()
         }
+        updateWindowFrame(for: zoomController.targetRect)
         window?.orderFrontRegardless()
-        updateWindowPosition(for: latestTargetRect)
     }
 
     func hide() {
         window?.orderOut(nil)
     }
 
-    private func makeWindow() -> NSWindow {
+    private func createWindow() -> NSWindow {
         let hosting = NSHostingController(rootView: ZoomPreviewView(zoomController: zoomController))
         let window = NSWindow(contentViewController: hosting)
         window.styleMask = [.borderless]
@@ -49,23 +48,17 @@ final class ZoomWindowController {
         return window
     }
 
-    private func updateWindowPosition(for rect: GridRect) {
+    private func updateWindowFrame(for targetRect: GridRect) {
         guard let window else { return }
-        let targetPoint = GridPoint(x: rect.midX, y: rect.midY)
-
-        guard let screen = screen(containing: targetPoint) else { return }
+        guard let screen = screenContaining(targetRect.center) else { return }
         
-        let screenFrame = screen.frame
-        
-        // The window should always fill the entire screen containing the target
-        // The zoom controller's snapshot and transforms are updated by OverlayController
-        // which has the correct screen rect from the grid partitioner
-        window.setFrame(screenFrame, display: true, animate: false)
+        // Window fills entire screen containing the target
+        window.setFrame(screen.frame, display: true, animate: false)
     }
 
-    private func screen(containing point: GridPoint) -> NSScreen? {
-        let cocoaPoint = NSPoint(x: point.x, y: point.y)
-        return NSScreen.screens.first { NSMouseInRect(cocoaPoint, $0.frame, false) } ?? NSScreen.main
+    private func screenContaining(_ point: GridPoint) -> NSScreen? {
+        let nsPoint = NSPoint(x: point.x, y: point.y)
+        return NSScreen.screens.first { NSMouseInRect(nsPoint, $0.frame, false) } ?? NSScreen.main
     }
 }
 #endif
