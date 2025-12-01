@@ -148,6 +148,12 @@ public final class InputManager {
                 if consumed { return nil }
             }
             
+            // Handle arrow keys by keycode when overlay is active
+            if overlayController.isActive {
+                let consumed = handleArrowKey(keyCode: keyCode)
+                if consumed { return nil }
+            }
+            
             if let character = character(from: event) {
                 let consumed = handleKeyDown(character, commandActive: commandKeyIsDown)
                 if consumed { return nil }
@@ -159,6 +165,27 @@ public final class InputManager {
         }
 
         return Unmanaged.passUnretained(event)
+    }
+    
+    private func handleArrowKey(keyCode: Int64) -> Bool {
+        let direction: OverlayController.ArrowDirection?
+        switch keyCode {
+        case 126: // Up arrow
+            direction = .up
+        case 125: // Down arrow
+            direction = .down
+        case 123: // Left arrow
+            direction = .left
+        case 124: // Right arrow
+            direction = .right
+        default:
+            return false
+        }
+        
+        if let dir = direction {
+            return overlayController.moveSelection(dir)
+        }
+        return false
     }
 
     private func character(from event: CGEvent) -> Character? {

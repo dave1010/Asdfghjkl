@@ -1,7 +1,5 @@
 # Asdfghjkl
 
-- arrow keys should move the selected tile up/down/left/right by half it's width/height respectively (and also move the mouse position)
-
 - support double, right and middle clicking
 
 - space (without selecting a tile) should just click at the current mouse position
@@ -10,3 +8,6 @@
 
 - menu bar icon with About window. explain basic controls
 
+- landing page website
+
+- icon: a 3x3 grid, like a tic tac toe board

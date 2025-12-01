@@ -22,4 +22,5 @@ The Swift package exposes a platform-neutral `AsdfghjklCore` library alongside t
 2. Double-tapping Command toggles the overlay and shows the overlay windows.
 3. Each key press refines the grid rectangle via the core layout; the first key maps to a display when multiple screens are present, after which refinements stay within that slice, move the cursor to the refined centre, and update the highlight. The current state is pushed to history before each refinement.
 4. Backspace pops the previous state from history, restoring the rectangle and cursor position to the previous level.
-5. Space posts a click at the refined target without warping again, after which the overlay hides; Escape cancels instead.
+5. Arrow keys move the selected tile by half its width (left/right) or height (up/down), keeping its size unchanged while updating cursor position. Movement is blocked before a selection is made and constrained to stay within screen bounds.
+6. Space posts a click at the refined target without warping again, after which the overlay hides; Escape cancels instead.

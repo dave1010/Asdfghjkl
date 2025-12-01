@@ -6,7 +6,7 @@ Named after the [Deadmau5 song Asdfghjkl](https://www.youtube.com/watch?v=1aP910
 
 ## What does it do?
 
-1. Double tap Cmd to see a grid on your screen.
+1. Double tap `Cmd` to see a keyboard grid on your screen.
 2. Tap a corresponding key to move the mouse to that area.
 3. Tap again (and again) to drill down.
 4. Tap `Space` at any point to click the mouse.
@@ -14,6 +14,7 @@ Named after the [Deadmau5 song Asdfghjkl](https://www.youtube.com/watch?v=1aP910
 You can also:
 
 - Tap `Backspace` to zoom back out to the previous level
+- Tap `Arrow Keys` to move the selected tile up/down/left/right by half its size
 - Tap `Esc` to cancel and hide the overlay
 
 ## Why?

@@ -160,6 +160,77 @@ public final class OverlayController {
         notifyStateChange()
         return true
     }
+    
+    public enum ArrowDirection {
+        case up, down, left, right
+    }
+    
+    public func moveSelection(_ direction: ArrowDirection) -> Bool {
+        guard state.isActive else { return false }
+        
+        // Don't allow movement before a selection has been made
+        // For multi-screen: need a selected slice
+        // For single screen: need at least one refinement
+        if gridSlices.count > 1 && selectedSliceIndex == nil {
+            return false
+        }
+        if refinementCount == 0 {
+            return false
+        }
+        
+        let halfWidth = state.currentRect.width / 2
+        let halfHeight = state.currentRect.height / 2
+        
+        let newRect: GridRect
+        switch direction {
+        case .up:
+            newRect = GridRect(
+                x: state.currentRect.origin.x,
+                y: state.currentRect.origin.y - halfHeight,
+                width: state.currentRect.width,
+                height: state.currentRect.height
+            )
+        case .down:
+            newRect = GridRect(
+                x: state.currentRect.origin.x,
+                y: state.currentRect.origin.y + halfHeight,
+                width: state.currentRect.width,
+                height: state.currentRect.height
+            )
+        case .left:
+            newRect = GridRect(
+                x: state.currentRect.origin.x - halfWidth,
+                y: state.currentRect.origin.y,
+                width: state.currentRect.width,
+                height: state.currentRect.height
+            )
+        case .right:
+            newRect = GridRect(
+                x: state.currentRect.origin.x + halfWidth,
+                y: state.currentRect.origin.y,
+                width: state.currentRect.width,
+                height: state.currentRect.height
+            )
+        }
+        
+        // Check if the new rect would be completely within the grid bounds
+        let bounds = state.gridRect
+        guard newRect.minX >= bounds.minX,
+              newRect.minY >= bounds.minY,
+              newRect.minX + newRect.width <= bounds.minX + bounds.width,
+              newRect.minY + newRect.height <= bounds.minY + bounds.height else {
+            return false
+        }
+        
+        state.currentRect = newRect
+        mouseActionPerformer.moveCursor(to: state.targetPoint)
+        notifyStateChange()
+        
+        print("[OverlayController] Moved selection \(direction)")
+        print("[OverlayController]   New rect: \(state.currentRect)")
+        
+        return true
+    }
 
     private func notifyStateChange() {
         stateDidChange?(state)

@@ -298,6 +298,302 @@ final class OverlayControllerTests: XCTestCase {
         _ = controller.zoomOut()
         XCTAssertFalse(controller.isActive, "Should cancel overlay after zooming out from full screen")
     }
+    
+    func testMoveSelectionUp() {
+        let performer = StubMouseActionPerformer()
+        let controller = OverlayController(
+            gridLayout: GridLayout(),
+            screenBoundsProvider: { [GridRect(x: 0, y: 100, width: 100, height: 100)] },
+            mouseActionPerformer: performer
+        )
+
+        controller.start()
+        _ = controller.handleKey("q")
+        let initialRect = controller.targetRect
+        
+        let moved = controller.moveSelection(.up)
+        
+        XCTAssertTrue(moved)
+        let newRect = controller.targetRect
+        XCTAssertEqual(newRect.origin.x, initialRect.origin.x)
+        XCTAssertEqual(newRect.origin.y, initialRect.origin.y - initialRect.height / 2)
+        XCTAssertEqual(newRect.width, initialRect.width)
+        XCTAssertEqual(newRect.height, initialRect.height)
+        XCTAssertEqual(performer.movedPoints.count, 2, "Should move cursor on refinement and arrow key")
+    }
+    
+    func testMoveSelectionDown() {
+        let performer = StubMouseActionPerformer()
+        let controller = OverlayController(
+            gridLayout: GridLayout(),
+            screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 100, height: 100)] },
+            mouseActionPerformer: performer
+        )
+
+        controller.start()
+        _ = controller.handleKey("q")
+        let initialRect = controller.targetRect
+        
+        let moved = controller.moveSelection(.down)
+        
+        XCTAssertTrue(moved)
+        let newRect = controller.targetRect
+        XCTAssertEqual(newRect.origin.x, initialRect.origin.x)
+        XCTAssertEqual(newRect.origin.y, initialRect.origin.y + initialRect.height / 2)
+        XCTAssertEqual(newRect.width, initialRect.width)
+        XCTAssertEqual(newRect.height, initialRect.height)
+    }
+    
+    func testMoveSelectionLeft() {
+        let performer = StubMouseActionPerformer()
+        let controller = OverlayController(
+            gridLayout: GridLayout(),
+            screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 100, height: 100)] },
+            mouseActionPerformer: performer
+        )
+
+        controller.start()
+        _ = controller.handleKey("f") // Select middle tile so we can move left
+        let initialRect = controller.targetRect
+        
+        let moved = controller.moveSelection(.left)
+        
+        XCTAssertTrue(moved)
+        let newRect = controller.targetRect
+        XCTAssertEqual(newRect.origin.x, initialRect.origin.x - initialRect.width / 2)
+        XCTAssertEqual(newRect.origin.y, initialRect.origin.y)
+        XCTAssertEqual(newRect.width, initialRect.width)
+        XCTAssertEqual(newRect.height, initialRect.height)
+    }
+    
+    func testMoveSelectionRight() {
+        let performer = StubMouseActionPerformer()
+        let controller = OverlayController(
+            gridLayout: GridLayout(),
+            screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 100, height: 100)] },
+            mouseActionPerformer: performer
+        )
+
+        controller.start()
+        _ = controller.handleKey("q")
+        let initialRect = controller.targetRect
+        
+        let moved = controller.moveSelection(.right)
+        
+        XCTAssertTrue(moved)
+        let newRect = controller.targetRect
+        XCTAssertEqual(newRect.origin.x, initialRect.origin.x + initialRect.width / 2)
+        XCTAssertEqual(newRect.origin.y, initialRect.origin.y)
+        XCTAssertEqual(newRect.width, initialRect.width)
+        XCTAssertEqual(newRect.height, initialRect.height)
+    }
+    
+    func testMoveSelectionReturnsFalseWhenInactive() {
+        let controller = OverlayController(
+            gridLayout: GridLayout(),
+            screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 100, height: 100)] }
+        )
+
+        let moved = controller.moveSelection(.up)
+        
+        XCTAssertFalse(moved)
+    }
+    
+    func testMoveSelectionMovesCursor() {
+        let performer = StubMouseActionPerformer()
+        let controller = OverlayController(
+            gridLayout: GridLayout(),
+            screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 100, height: 100)] },
+            mouseActionPerformer: performer
+        )
+
+        controller.start()
+        _ = controller.handleKey("q")
+        performer.reset()
+        
+        _ = controller.moveSelection(.right)
+        
+        XCTAssertEqual(performer.movedPoints.count, 1)
+        XCTAssertGreaterThan(performer.movedPoints.last?.x ?? 0, 5)
+    }
+    
+    func testMoveSelectionBlockedBeforeFirstSelection() {
+        let performer = StubMouseActionPerformer()
+        let controller = OverlayController(
+            gridLayout: GridLayout(),
+            screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 100, height: 100)] },
+            mouseActionPerformer: performer
+        )
+
+        controller.start()
+        let initialRect = controller.targetRect
+        performer.reset()
+        
+        let moved = controller.moveSelection(.right)
+        
+        XCTAssertFalse(moved, "Should not move before first selection")
+        XCTAssertEqual(controller.targetRect, initialRect, "Rect should not change")
+        XCTAssertEqual(performer.movedPoints.count, 0, "Should not move cursor")
+    }
+    
+    func testMoveSelectionBlockedBeforeScreenSelection() {
+        let screens = [
+            GridRect(x: 0, y: 0, width: 100, height: 100),
+            GridRect(x: 200, y: 0, width: 100, height: 100)
+        ]
+        let performer = StubMouseActionPerformer()
+        let controller = OverlayController(
+            screenBoundsProvider: { screens },
+            mouseActionPerformer: performer
+        )
+
+        controller.start()
+        let initialRect = controller.targetRect
+        performer.reset()
+        
+        let moved = controller.moveSelection(.right)
+        
+        XCTAssertFalse(moved, "Should not move before screen is selected")
+        XCTAssertEqual(controller.targetRect, initialRect, "Rect should not change")
+        XCTAssertEqual(performer.movedPoints.count, 0, "Should not move cursor")
+    }
+    
+    func testMoveSelectionAllowedAfterScreenSelection() {
+        let screens = [
+            GridRect(x: 0, y: 0, width: 100, height: 100),
+            GridRect(x: 200, y: 0, width: 100, height: 100)
+        ]
+        let performer = StubMouseActionPerformer()
+        let controller = OverlayController(
+            screenBoundsProvider: { screens },
+            mouseActionPerformer: performer
+        )
+
+        controller.start()
+        _ = controller.handleKey("y") // Select second screen
+        let rectAfterSelection = controller.targetRect
+        performer.reset()
+        
+        let moved = controller.moveSelection(.right)
+        
+        XCTAssertTrue(moved, "Should allow movement after screen is selected")
+        XCTAssertNotEqual(controller.targetRect, rectAfterSelection, "Rect should change")
+        XCTAssertEqual(performer.movedPoints.count, 1, "Should move cursor")
+    }
+    
+    func testMoveSelectionBlockedAtLeftBoundary() {
+        let performer = StubMouseActionPerformer()
+        let controller = OverlayController(
+            gridLayout: GridLayout(),
+            screenBoundsProvider: { [GridRect(x: 100, y: 100, width: 100, height: 100)] },
+            mouseActionPerformer: performer
+        )
+
+        controller.start()
+        _ = controller.handleKey("q") // Select top-left tile
+        let rectAfterSelection = controller.targetRect
+        XCTAssertEqual(rectAfterSelection.origin.x, 100, "Should be at left edge")
+        performer.reset()
+        
+        let moved = controller.moveSelection(.left)
+        
+        XCTAssertFalse(moved, "Should not move beyond left boundary")
+        XCTAssertEqual(controller.targetRect, rectAfterSelection, "Rect should not change")
+        XCTAssertEqual(performer.movedPoints.count, 0, "Should not move cursor")
+    }
+    
+    func testMoveSelectionBlockedAtRightBoundary() {
+        let performer = StubMouseActionPerformer()
+        let controller = OverlayController(
+            gridLayout: GridLayout(),
+            screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 100, height: 100)] },
+            mouseActionPerformer: performer
+        )
+
+        controller.start()
+        _ = controller.handleKey("p") // Select top-right tile
+        let rectAfterSelection = controller.targetRect
+        XCTAssertEqual(rectAfterSelection.origin.x + rectAfterSelection.width, 100, "Should be at right edge")
+        performer.reset()
+        
+        let moved = controller.moveSelection(.right)
+        
+        XCTAssertFalse(moved, "Should not move beyond right boundary")
+        XCTAssertEqual(controller.targetRect, rectAfterSelection, "Rect should not change")
+        XCTAssertEqual(performer.movedPoints.count, 0, "Should not move cursor")
+    }
+    
+    func testMoveSelectionBlockedAtTopBoundary() {
+        let performer = StubMouseActionPerformer()
+        let controller = OverlayController(
+            gridLayout: GridLayout(),
+            screenBoundsProvider: { [GridRect(x: 0, y: 100, width: 100, height: 100)] },
+            mouseActionPerformer: performer
+        )
+
+        controller.start()
+        _ = controller.handleKey("1") // Select top-left tile
+        let rectAfterSelection = controller.targetRect
+        XCTAssertEqual(rectAfterSelection.origin.y, 100, "Should be at top edge")
+        performer.reset()
+        
+        let moved = controller.moveSelection(.up)
+        
+        XCTAssertFalse(moved, "Should not move beyond top boundary")
+        XCTAssertEqual(controller.targetRect, rectAfterSelection, "Rect should not change")
+        XCTAssertEqual(performer.movedPoints.count, 0, "Should not move cursor")
+    }
+    
+    func testMoveSelectionBlockedAtBottomBoundary() {
+        let performer = StubMouseActionPerformer()
+        let controller = OverlayController(
+            gridLayout: GridLayout(),
+            screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 100, height: 100)] },
+            mouseActionPerformer: performer
+        )
+
+        controller.start()
+        _ = controller.handleKey("/") // Select bottom-right tile
+        let rectAfterSelection = controller.targetRect
+        XCTAssertEqual(rectAfterSelection.origin.y + rectAfterSelection.height, 100, "Should be at bottom edge")
+        performer.reset()
+        
+        let moved = controller.moveSelection(.down)
+        
+        XCTAssertFalse(moved, "Should not move beyond bottom boundary")
+        XCTAssertEqual(controller.targetRect, rectAfterSelection, "Rect should not change")
+        XCTAssertEqual(performer.movedPoints.count, 0, "Should not move cursor")
+    }
+    
+    func testMoveSelectionAllowedWithinBounds() {
+        let performer = StubMouseActionPerformer()
+        let controller = OverlayController(
+            gridLayout: GridLayout(),
+            screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 100, height: 100)] },
+            mouseActionPerformer: performer
+        )
+
+        controller.start()
+        _ = controller.handleKey("f") // Select middle tile
+        let rectAfterSelection = controller.targetRect
+        performer.reset()
+        
+        // All directions should work from the middle
+        let movedUp = controller.moveSelection(.up)
+        XCTAssertTrue(movedUp, "Should move up from middle")
+        
+        let movedDown = controller.moveSelection(.down)
+        XCTAssertTrue(movedDown, "Should move down (back to middle)")
+        
+        let movedLeft = controller.moveSelection(.left)
+        XCTAssertTrue(movedLeft, "Should move left from middle")
+        
+        let movedRight = controller.moveSelection(.right)
+        XCTAssertTrue(movedRight, "Should move right (back to middle)")
+        
+        XCTAssertEqual(controller.targetRect, rectAfterSelection, "Should be back at original position")
+        XCTAssertEqual(performer.movedPoints.count, 4, "Should move cursor for each arrow key")
+    }
 }
 
 private final class StubMouseActionPerformer: MouseActionPerforming {
