@@ -102,17 +102,19 @@ final class InputManagerTests: XCTestCase {
         XCTAssertEqual(controller.targetRect, rectAfterFirstKey)
     }
     
-    func testBackspaceDoesNotConsumeWhenNoHistory() {
+    func testBackspaceCancelsOverlayWhenNoHistory() {
         let controller = OverlayController(
             screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 100, height: 100)] }
         )
         let manager = InputManager(overlayController: controller)
 
         controller.start()
+        XCTAssertTrue(controller.isActive, "Overlay should be active after start")
         
         let consumed = manager.handleKeyDown("\u{7f}") // Backspace
         
-        XCTAssertFalse(consumed)
+        XCTAssertTrue(consumed, "Backspace should consume event when canceling overlay")
+        XCTAssertFalse(controller.isActive, "Overlay should be canceled after backspace with no history")
     }
     
     func testBackspaceDoesNotConsumeWhenInactive() {

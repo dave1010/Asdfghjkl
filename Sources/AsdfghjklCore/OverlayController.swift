@@ -160,7 +160,12 @@ public final class OverlayController {
     
     public func zoomOut() -> Bool {
         guard state.isActive else { return false }
-        guard let previous = history.popLast() else { return false }
+        
+        // If we're already at the initial state (no history), cancel the overlay
+        guard let previous = history.popLast() else {
+            cancel()
+            return true
+        }
         
         state.currentRect = previous.rect
         selectedSliceIndex = previous.sliceIndex
@@ -168,8 +173,16 @@ public final class OverlayController {
         state.isGridVisible = refinementCount < 3
         
         if refinementCount == 0 {
+            // Zooming out to the initial full-screen state
             state.isZoomVisible = false
             zoomScale = 1.0
+            // Reset to show overlay on all screens
+            selectedSliceIndex = gridSlices.count == 1 ? 0 : nil
+            let screens = screenBoundsProvider()
+            let bounds = combinedBounds(for: screens)
+            state.currentRect = bounds
+            state.gridRect = bounds
+            print("[OverlayController] Zoomed out to full-screen overlay on all screens")
         } else {
             zoomScale = baseZoomScale + Double(refinementCount - 1) * zoomIncrement
         }

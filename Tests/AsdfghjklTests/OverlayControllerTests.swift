@@ -205,19 +205,27 @@ final class OverlayControllerTests: XCTestCase {
         XCTAssertEqual(controller.targetRect, firstRect)
         XCTAssertEqual(zoom.zoomScale, 1.0)
         XCTAssertFalse(controller.stateSnapshot.isZoomVisible)
+        
+        // One more zoom out should cancel the overlay
+        let zoomedToCancel = controller.zoomOut()
+        
+        XCTAssertTrue(zoomedToCancel)
+        XCTAssertFalse(controller.isActive, "Final zoom out should cancel overlay")
     }
     
-    func testZoomOutReturnsFalseWhenNoHistory() {
+    func testZoomOutCancelsOverlayWhenNoHistory() {
         let controller = OverlayController(
             gridLayout: GridLayout(),
             screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 100, height: 100)] }
         )
 
         controller.start()
+        XCTAssertTrue(controller.isActive, "Overlay should be active after start")
+        
         let result = controller.zoomOut()
         
-        XCTAssertFalse(result)
-        XCTAssertTrue(controller.isActive)
+        XCTAssertTrue(result, "zoomOut should return true when canceling")
+        XCTAssertFalse(controller.isActive, "Overlay should be deactivated after zoom out with no history")
     }
     
     func testZoomOutReturnsFalseWhenInactive() {
@@ -293,6 +301,38 @@ final class OverlayControllerTests: XCTestCase {
         
         _ = controller.zoomOut()
         XCTAssertTrue(controller.stateSnapshot.isGridVisible, "Grid should remain visible at 0 refinements")
+    }
+    
+    func testZoomOutToFullScreenRestoresBothScreens() {
+        let screens = [
+            GridRect(x: 0, y: 0, width: 100, height: 100),
+            GridRect(x: 200, y: 0, width: 100, height: 100)
+        ]
+        let combinedBounds = GridRect(x: 0, y: 0, width: 300, height: 100)
+        let controller = OverlayController(screenBoundsProvider: { screens })
+
+        controller.start()
+        XCTAssertEqual(controller.targetRect, combinedBounds, "Should start with combined bounds of both screens")
+        
+        // Select second screen and refine
+        _ = controller.handleKey("y")
+        XCTAssertEqual(controller.targetRect, GridRect(x: 200, y: 25, width: 20, height: 25))
+        
+        _ = controller.handleKey("h")
+        XCTAssertEqual(controller.targetRect, GridRect(x: 200, y: 37.5, width: 4, height: 6.25))
+        
+        // Zoom out once
+        _ = controller.zoomOut()
+        XCTAssertEqual(controller.targetRect, GridRect(x: 200, y: 25, width: 20, height: 25))
+        
+        // Zoom out again - should restore to full screen overlay on both screens
+        _ = controller.zoomOut()
+        XCTAssertEqual(controller.targetRect, combinedBounds, "Should restore combined bounds of both screens")
+        XCTAssertFalse(controller.stateSnapshot.isZoomVisible, "Zoom should be hidden at full screen")
+        
+        // One more zoom out should cancel the overlay
+        _ = controller.zoomOut()
+        XCTAssertFalse(controller.isActive, "Should cancel overlay after zooming out from full screen")
     }
 }
 
