@@ -117,7 +117,7 @@ struct OverlayGridView: View {
     
     private func gridAreaInView(viewSize: CGSize) -> CGRect? {
         let screenFrame = screen.frame
-        let gridRect = CGRect(x: model.gridRect.origin.x, y: model.gridRect.origin.y, width: model.gridRect.size.x, height: model.gridRect.size.y)
+        let gridRect = CGRect(x: model.currentRect.origin.x, y: model.currentRect.origin.y, width: model.currentRect.size.x, height: model.currentRect.size.y)
         let intersection = gridRect.intersection(screenFrame)
         guard !intersection.isNull else { return nil }
 

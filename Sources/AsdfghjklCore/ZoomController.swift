@@ -91,6 +91,14 @@ public final class ZoomController: ObservableObject {
         self.zoomScale = desiredZoomFactor
         self.zoomOffset = calculateZoomOffset()
 
+        let targetCenter = targetCenterInScreenCoordinates()
+        print("[ZoomController] Updated zoom")
+        print("[ZoomController]   Target rect: \(targetRect)")
+        print("[ZoomController]   Screen rect: \(screenRect)")
+        print("[ZoomController]   Zoom anchor (target center in screen coords): (\(targetCenter.x), \(targetCenter.y))")
+        print("[ZoomController]   Zoom level: \(zoomScale)x")
+        print("[ZoomController]   Zoom offset: (\(zoomOffset.x), \(zoomOffset.y))")
+
         #if os(macOS)
         latestSnapshot = snapshotProvider.capture(screen: screenRect)
         #endif
@@ -134,10 +142,16 @@ public final class ZoomController: ObservableObject {
             max: targetEdges.top * zoomScale
         )
         
-        return GridPoint(
+        let clamped = GridPoint(
             x: max(xRange.min, min(offset.x, xRange.max)),
             y: max(yRange.min, min(offset.y, yRange.max))
         )
+        
+        if clamped.x != offset.x || clamped.y != offset.y {
+            print("[ZoomController]   Offset clamped from (\(offset.x), \(offset.y)) to (\(clamped.x), \(clamped.y))")
+        }
+        
+        return clamped
     }
     
     private func targetEdgesInScreenCoordinates() -> (left: Double, right: Double, top: Double, bottom: Double) {

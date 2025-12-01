@@ -40,6 +40,14 @@ public final class OverlayController {
             gridSlices = GridPartitioner.slices(for: [.defaultScreen], layout: gridLayout)
         }
 
+        print("[OverlayController] ✓ ACTIVATED")
+        print("[OverlayController] Screens: \(screens.count)")
+        print("[OverlayController] Grid columns: \(gridLayout.columns), rows: \(gridLayout.rows)")
+        print("[OverlayController] Keyboard split: \(gridSlices.count) slice(s)")
+        for (index, slice) in gridSlices.enumerated() {
+            print("[OverlayController]   Slice \(index): columns \(slice.columnRange), screen bounds: \(slice.screenRect)")
+        }
+
         let bounds = combinedBounds(for: screens)
         resetState(to: bounds)
         notifyStateChange()
@@ -92,23 +100,37 @@ public final class OverlayController {
             let selectedScreen = gridSlices[sliceIndex].screenRect
             state.currentRect = selectedScreen
             state.gridRect = selectedScreen
+            print("[OverlayController] Selected screen slice \(sliceIndex) for column \(coordinate.column)")
+            print("[OverlayController]   Screen bounds: \(selectedScreen)")
         }
     }
     
     private func refineGrid(for key: Character) -> GridRect? {
         if let sliceIndex = selectedSliceIndex, sliceIndex < gridSlices.count {
-            return gridSlices[sliceIndex].layout.rect(for: key, in: state.gridRect)
+            return gridSlices[sliceIndex].layout.rect(for: key, in: state.currentRect)
         }
-        return gridLayout.rect(for: key, in: state.gridRect)
+        return gridLayout.rect(for: key, in: state.currentRect)
     }
     
     private func applyRefinement(_ refined: GridRect) {
         history.append((rect: state.currentRect, sliceIndex: selectedSliceIndex, refinementCount: refinementCount))
+        
+        let parentRect = state.currentRect
         state.currentRect = refined
-        state.gridRect = refined
         state.isZoomVisible = true
         refinementCount += 1
         zoomScale = baseZoomScale + Double(refinementCount - 1) * zoomIncrement
+        
+        // Calculate position within parent grid
+        let relativeX = refined.origin.x - parentRect.origin.x
+        let relativeY = refined.origin.y - parentRect.origin.y
+        
+        print("[OverlayController] Grid selection refined (depth \(refinementCount))")
+        print("[OverlayController]   Parent grid: \(parentRect)")
+        print("[OverlayController]   Selected section: \(refined)")
+        print("[OverlayController]   Position in parent: (\(relativeX), \(relativeY))")
+        print("[OverlayController]   Zoom scale: \(zoomScale)x")
+        
         updateZoom()
     }
     
@@ -140,7 +162,6 @@ public final class OverlayController {
         guard let previous = history.popLast() else { return false }
         
         state.currentRect = previous.rect
-        state.gridRect = previous.rect
         selectedSliceIndex = previous.sliceIndex
         refinementCount = previous.refinementCount
         
@@ -150,6 +171,10 @@ public final class OverlayController {
         } else {
             zoomScale = baseZoomScale + Double(refinementCount - 1) * zoomIncrement
         }
+        
+        print("[OverlayController] Zoomed out to depth \(refinementCount)")
+        print("[OverlayController]   Current rect: \(state.currentRect)")
+        print("[OverlayController]   Zoom scale: \(zoomScale)x")
         
         updateZoom()
         mouseActionPerformer.moveCursor(to: state.targetPoint)
@@ -163,6 +188,7 @@ public final class OverlayController {
 
     private func deactivate() {
         guard state.isActive else { return }
+        print("[OverlayController] ✗ DEACTIVATED")
         state.reset(rect: state.rootRect)
         selectedSliceIndex = gridSlices.count == 1 ? 0 : nil
         refinementCount = 0
