@@ -120,21 +120,6 @@ struct AsdfghjklApp {
         let overlayController = OverlayController()
         let inputManager = InputManager(overlayController: overlayController)
         inputManager.start()
-
-        if ProcessInfo.processInfo.environment["ASDFGHJKL_DEMO"] == "1" {
-            runDemo(using: overlayController, inputManager: inputManager)
-        }
-    }
-
-    private static func runDemo(using overlayController: OverlayController, inputManager: InputManager) {
-        print("Asdfghjkl overlay skeleton initialised. Double-tap Cmd to toggle the overlay once event taps are wired up.")
-        overlayController.start()
-        _ = overlayController.handleKey("q")
-        _ = overlayController.handleKey("w")
-        if let target = overlayController.targetPoint {
-            print("Refined target ready at: (\(target.x), \(target.y))")
-        }
-        inputManager.cancelOverlay()
     }
 }
 #endif
