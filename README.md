@@ -34,6 +34,15 @@ Mice are slow and a long way away from the keyboard.
 - [homerow](https://www.homerow.app/)
 - [httpsvimac](https://github.com/nchudleigh/vimac)
 
+## Download & Install
+
+1. Download the latest `Asdfghjkl` binary from the [GitHub releases page](https://github.com/dave1010/Asdfghjkl/releases).
+2. Remove the quarantine attribute since the binary is currently unsigned:
+   ```sh
+   xattr -c Asdfghjkl
+   ```
+3. Grant the required macOS permissions (Input Monitoring and Accessibility) when prompted so the app can create its global event tap.
+
 ## How does it work?
 
 Read [ARCHITECTURE.md](ARCHITECTURE.md) for a deeper look at the current components and runtime flow.
