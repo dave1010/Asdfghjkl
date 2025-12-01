@@ -169,6 +169,86 @@ final class OverlayControllerTests: XCTestCase {
         XCTAssertTrue(performer.movedPoints.isEmpty)
         XCTAssertEqual(performer.clickedPoints, [GridPoint(x: 38, y: 2.5)])
     }
+    
+    func testZoomOutRestoresPreviousLevel() {
+        let performer = StubMouseActionPerformer()
+        let zoom = ZoomController()
+        let controller = OverlayController(
+            gridLayout: GridLayout(),
+            screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 100, height: 100)] },
+            zoomController: zoom,
+            mouseActionPerformer: performer
+        )
+
+        controller.start()
+        let firstRect = controller.targetRect
+        
+        _ = controller.handleKey("q")
+        let secondRect = controller.targetRect
+        
+        _ = controller.handleKey("w")
+        let thirdRect = controller.targetRect
+        
+        XCTAssertNotEqual(firstRect, secondRect)
+        XCTAssertNotEqual(secondRect, thirdRect)
+        XCTAssertEqual(zoom.zoomScale, 2.5)
+        
+        let zoomed = controller.zoomOut()
+        
+        XCTAssertTrue(zoomed)
+        XCTAssertEqual(controller.targetRect, secondRect)
+        XCTAssertEqual(zoom.zoomScale, 2.0)
+        
+        let zoomedAgain = controller.zoomOut()
+        
+        XCTAssertTrue(zoomedAgain)
+        XCTAssertEqual(controller.targetRect, firstRect)
+        XCTAssertEqual(zoom.zoomScale, 1.0)
+        XCTAssertFalse(controller.stateSnapshot.isZoomVisible)
+    }
+    
+    func testZoomOutReturnsFalseWhenNoHistory() {
+        let controller = OverlayController(
+            gridLayout: GridLayout(),
+            screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 100, height: 100)] }
+        )
+
+        controller.start()
+        let result = controller.zoomOut()
+        
+        XCTAssertFalse(result)
+        XCTAssertTrue(controller.isActive)
+    }
+    
+    func testZoomOutReturnsFalseWhenInactive() {
+        let controller = OverlayController(
+            gridLayout: GridLayout(),
+            screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 100, height: 100)] }
+        )
+
+        let result = controller.zoomOut()
+        
+        XCTAssertFalse(result)
+    }
+    
+    func testZoomOutMovesCursor() {
+        let performer = StubMouseActionPerformer()
+        let controller = OverlayController(
+            gridLayout: GridLayout(),
+            screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 100, height: 100)] },
+            mouseActionPerformer: performer
+        )
+
+        controller.start()
+        _ = controller.handleKey("q")
+        _ = controller.handleKey("w")
+        
+        performer.reset()
+        _ = controller.zoomOut()
+        
+        XCTAssertEqual(performer.movedPoints.count, 1)
+        XCTAssertEqual(performer.movedPoints.last, GridPoint(x: 5, y: 37.5))
+    }
 }
 
 private final class StubMouseActionPerformer: MouseActionPerforming {

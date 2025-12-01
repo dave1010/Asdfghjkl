@@ -116,6 +116,10 @@ public final class InputManager {
             handleSpacebarClick()
             return true
         }
+        
+        if key == "\u{7f}" { // Backspace/Delete
+            return overlayController.zoomOut()
+        }
 
         return handleKeyPress(key) != nil
     }
@@ -137,6 +141,13 @@ public final class InputManager {
             }
             commandKeyIsDown = commandIsDown
         case .keyDown:
+            // Handle delete/backspace by keycode (51) since character extraction may not work reliably
+            let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
+            if keyCode == 51 && overlayController.isActive {
+                let consumed = overlayController.zoomOut()
+                if consumed { return nil }
+            }
+            
             if let character = character(from: event) {
                 let consumed = handleKeyDown(character, commandActive: commandKeyIsDown)
                 if consumed { return nil }

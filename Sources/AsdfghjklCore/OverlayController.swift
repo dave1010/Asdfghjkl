@@ -12,6 +12,7 @@ public final class OverlayController {
     private var zoomScale: Double = 1.0
     private let baseZoomScale: Double = 2.0
     private let zoomIncrement: Double = 0.5
+    private var history: [(rect: GridRect, sliceIndex: Int?, refinementCount: Int)] = []
     public var stateDidChange: ((OverlayState) -> Void)?
 
     public init(
@@ -51,6 +52,7 @@ public final class OverlayController {
         selectedSliceIndex = gridSlices.count == 1 ? 0 : nil
         refinementCount = 0
         zoomScale = 1.0
+        history = []
         updateZoom()
     }
     
@@ -101,6 +103,7 @@ public final class OverlayController {
     }
     
     private func applyRefinement(_ refined: GridRect) {
+        history.append((rect: state.currentRect, sliceIndex: selectedSliceIndex, refinementCount: refinementCount))
         state.currentRect = refined
         state.gridRect = refined
         state.isZoomVisible = true
@@ -131,6 +134,28 @@ public final class OverlayController {
         mouseActionPerformer.click(at: target)
         deactivate()
     }
+    
+    public func zoomOut() -> Bool {
+        guard state.isActive else { return false }
+        guard let previous = history.popLast() else { return false }
+        
+        state.currentRect = previous.rect
+        state.gridRect = previous.rect
+        selectedSliceIndex = previous.sliceIndex
+        refinementCount = previous.refinementCount
+        
+        if refinementCount == 0 {
+            state.isZoomVisible = false
+            zoomScale = 1.0
+        } else {
+            zoomScale = baseZoomScale + Double(refinementCount - 1) * zoomIncrement
+        }
+        
+        updateZoom()
+        mouseActionPerformer.moveCursor(to: state.targetPoint)
+        notifyStateChange()
+        return true
+    }
 
     private func notifyStateChange() {
         stateDidChange?(state)
@@ -142,6 +167,7 @@ public final class OverlayController {
         selectedSliceIndex = gridSlices.count == 1 ? 0 : nil
         refinementCount = 0
         zoomScale = 1.0
+        history = []
         notifyStateChange()
     }
 

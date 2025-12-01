@@ -82,6 +82,47 @@ final class InputManagerTests: XCTestCase {
 
         XCTAssertFalse(controller.isActive, "Command+key use should suppress double-tap activation")
     }
+    
+    func testBackspaceZoomsOutOnePreviousLevel() {
+        let performer = StubMouseActionPerformer()
+        let controller = OverlayController(
+            screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 100, height: 100)] },
+            mouseActionPerformer: performer
+        )
+        let manager = InputManager(overlayController: controller)
+
+        controller.start()
+        _ = controller.handleKey("q")
+        let rectAfterFirstKey = controller.targetRect
+        _ = controller.handleKey("w")
+        
+        let consumed = manager.handleKeyDown("\u{7f}") // Backspace
+        
+        XCTAssertTrue(consumed)
+        XCTAssertEqual(controller.targetRect, rectAfterFirstKey)
+    }
+    
+    func testBackspaceDoesNotConsumeWhenNoHistory() {
+        let controller = OverlayController(
+            screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 100, height: 100)] }
+        )
+        let manager = InputManager(overlayController: controller)
+
+        controller.start()
+        
+        let consumed = manager.handleKeyDown("\u{7f}") // Backspace
+        
+        XCTAssertFalse(consumed)
+    }
+    
+    func testBackspaceDoesNotConsumeWhenInactive() {
+        let controller = OverlayController()
+        let manager = InputManager(overlayController: controller)
+        
+        let consumed = manager.handleKeyDown("\u{7f}") // Backspace
+        
+        XCTAssertFalse(consumed)
+    }
 }
 
 private final class StubMouseActionPerformer: MouseActionPerforming {

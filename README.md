@@ -4,7 +4,7 @@ Use the keyboard instead of the mouse.
 
 Named after the Deadmau5' song Asdfghjkl, as the mouse is dead and you use a Qwerty keyboard instead.
 
-**Double tap Cmd to see an overlay on your screen. Tap a corresponding key to select that area, then tap again (and again) to drill down. Tap space to click the refined target.**
+**Double tap Cmd to see an overlay on your screen. Tap a corresponding key to select that area, then tap again (and again) to drill down. Tap space to click the refined target. Press backspace to zoom back out to the previous level.**
 
 The package now ships a SwiftUI/AppKit macOS app lifecycle that installs a global CGEvent tap
 to capture double-Cmd activation and routes key presses into the `InputManager`. Borderless
@@ -15,7 +15,7 @@ active region (when Screen Recording permission is granted) using true pinch-to-
 stays fixed at its screen position while everything scales around it, exactly like zooming on a phone. The preview only appears after the first refinement, locks to the display that owns the
 targeted region, and zooms in by 150% on first focus (then by another 50% per refinement) so the
 destination is easy to verify without covering other overlays. Key presses are consumed while the overlay is
-active: letters refine the grid (and move the cursor to the refined centre), `Space` clicks, and `Esc` cancels.
+active: letters refine the grid (and move the cursor to the refined centre), `Space` clicks, `Backspace` zooms out one level, and `Esc` cancels.
 
 On multi-display setups, the 4×10 grid is divided horizontally across all overlay windows so
 the first keypress selects a screen by column range (e.g. `Q…T` on screen 1, `Y…P` on screen
