@@ -11,6 +11,7 @@ final class OverlayVisualModel: ObservableObject {
     @Published var currentRect: GridRect = .defaultScreen
     @Published var gridRect: GridRect = .defaultScreen
     @Published var isZoomVisible: Bool = false
+    @Published var isGridVisible: Bool = true
 
     func apply(state: OverlayState) {
         isActive = state.isActive
@@ -18,6 +19,7 @@ final class OverlayVisualModel: ObservableObject {
         currentRect = state.currentRect
         gridRect = state.gridRect
         isZoomVisible = state.isZoomVisible
+        isGridVisible = state.isGridVisible
     }
 }
 #endif

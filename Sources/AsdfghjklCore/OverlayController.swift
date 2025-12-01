@@ -119,6 +119,7 @@ public final class OverlayController {
         state.currentRect = refined
         state.isZoomVisible = true
         refinementCount += 1
+        state.isGridVisible = refinementCount < 3
         zoomScale = baseZoomScale + Double(refinementCount - 1) * zoomIncrement
         
         // Calculate position within parent grid
@@ -164,6 +165,7 @@ public final class OverlayController {
         state.currentRect = previous.rect
         selectedSliceIndex = previous.sliceIndex
         refinementCount = previous.refinementCount
+        state.isGridVisible = refinementCount < 3
         
         if refinementCount == 0 {
             state.isZoomVisible = false

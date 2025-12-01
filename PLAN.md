@@ -1,19 +1,13 @@
 # Asdfghjkl
 
-Tiny swift app yhat lets the user use the keyboard to move and click the mouse.
+Tiny swift app that lets the user use the keyboard to move and click the mouse.
 
-## Progress [80% done]
 
-* ✅ Core grid refinement and overlay state machine are implemented (`GridLayout`, `OverlayState`, `OverlayController`).
-* ✅ Command double-tap recognition and input routing logic are in place (`CommandTapRecognizer`, `InputManager`).
-* ✅ Zoom controller tracks the active target rect and zoom level so UI rendering can subscribe when the AppKit layer arrives.
-* 🟢 Action layer posts real CGEvent cursor warp + click events on macOS via `SystemMouseActionPerformer`.
-* 🟢 InputManager consumes overlay key events (grid refinement, space-to-click, escape-to-cancel) and marks Command-as-modifier usage to avoid false triggers.
-* 🟢 CGEvent tap installation now lives in `InputManager.start`, consuming overlay key events and toggling on double Cmd.
-* ✅ Overlay windows, zoom UI, and global event taps are now wired into the macOS app lifecycle (auto-rebuild on screen changes).
-* 🔶 Permissions and error handling are thin: when CGEvent taps fail we only `print` to stdout; add user-facing prompts and retry/diagnostic UI for missing Input Monitoring + Accessibility rights.
-* 🔶 Screen reconfiguration while the overlay is active leaves the grid locked to the old screen bounds; cancel or re-seed the state when notifications arrive so refinements stay on-screen.
-* 🔶 Zoom window lifecycle is currently tied to overlay visibility only; consider throttling the full-screen preview refresh to avoid slow snapshotting when rapidly re-activating the overlay.
+- backspace zoomes out one level already, but when zooming out the final time it doesnt show the overlay on *both* screens - only 1. update this so backspace zooms out to full screen overlay on both screens
+- after backspace to full screen overlay, next backspace should cancel the overlay entirely
+
+
+
 
 ## 0\. UX / Behaviour spec [100% done]
 

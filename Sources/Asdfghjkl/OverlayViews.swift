@@ -16,8 +16,10 @@ struct OverlayGridView: View {
                 
                 // Grid content with optional zoom transform
                 ZStack(alignment: .topLeading) {
-                    gridLines(in: proxy.size)
-                    gridLabels(in: proxy.size)
+                    if model.isGridVisible {
+                        gridLines(in: proxy.size)
+                        gridLabels(in: proxy.size)
+                    }
                     highlightView(in: proxy.size)
                 }
                 .modifier(ZoomTransformModifier(

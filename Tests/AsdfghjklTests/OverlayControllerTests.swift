@@ -131,7 +131,7 @@ final class OverlayControllerTests: XCTestCase {
         XCTAssertEqual(refined, GridRect(x: 0, y: 25, width: 10, height: 25))
         XCTAssertEqual(performer.movedPoints.last, GridPoint(x: 5, y: 37.5))
         XCTAssertTrue(controller.stateSnapshot.isZoomVisible)
-        XCTAssertEqual(zoom.zoomScale, 2)
+        XCTAssertEqual(zoom.zoomScale, 1.0)
     }
 
     func testSubsequentRefinementsIncreaseZoomScale() {
@@ -148,7 +148,7 @@ final class OverlayControllerTests: XCTestCase {
         _ = controller.handleKey("q")
         _ = controller.handleKey("w")
 
-        XCTAssertEqual(zoom.zoomScale, 2.5)
+        XCTAssertEqual(zoom.zoomScale, 1.0)
         XCTAssertEqual(performer.movedPoints.count, 2)
     }
 
@@ -191,13 +191,13 @@ final class OverlayControllerTests: XCTestCase {
         
         XCTAssertNotEqual(firstRect, secondRect)
         XCTAssertNotEqual(secondRect, thirdRect)
-        XCTAssertEqual(zoom.zoomScale, 2.5)
+        XCTAssertEqual(zoom.zoomScale, 1.0)
         
         let zoomed = controller.zoomOut()
         
         XCTAssertTrue(zoomed)
         XCTAssertEqual(controller.targetRect, secondRect)
-        XCTAssertEqual(zoom.zoomScale, 2.0)
+        XCTAssertEqual(zoom.zoomScale, 1.0)
         
         let zoomedAgain = controller.zoomOut()
         
@@ -248,6 +248,51 @@ final class OverlayControllerTests: XCTestCase {
         
         XCTAssertEqual(performer.movedPoints.count, 1)
         XCTAssertEqual(performer.movedPoints.last, GridPoint(x: 5, y: 37.5))
+    }
+    
+    func testGridHiddenAfterThreeRefinements() {
+        let controller = OverlayController(
+            gridLayout: GridLayout(),
+            screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 100, height: 100)] }
+        )
+
+        controller.start()
+        XCTAssertTrue(controller.stateSnapshot.isGridVisible)
+        
+        _ = controller.handleKey("q")
+        XCTAssertTrue(controller.stateSnapshot.isGridVisible, "Grid should be visible after 1 refinement")
+        
+        _ = controller.handleKey("w")
+        XCTAssertTrue(controller.stateSnapshot.isGridVisible, "Grid should be visible after 2 refinements")
+        
+        _ = controller.handleKey("a")
+        XCTAssertFalse(controller.stateSnapshot.isGridVisible, "Grid should be hidden after 3 refinements")
+        
+        _ = controller.handleKey("s")
+        XCTAssertFalse(controller.stateSnapshot.isGridVisible, "Grid should remain hidden after 4 refinements")
+    }
+    
+    func testGridReappearsWhenZoomingOutFromHidden() {
+        let controller = OverlayController(
+            gridLayout: GridLayout(),
+            screenBoundsProvider: { [GridRect(x: 0, y: 0, width: 100, height: 100)] }
+        )
+
+        controller.start()
+        _ = controller.handleKey("q")
+        _ = controller.handleKey("w")
+        _ = controller.handleKey("a")
+        
+        XCTAssertFalse(controller.stateSnapshot.isGridVisible, "Grid should be hidden after 3 refinements")
+        
+        _ = controller.zoomOut()
+        XCTAssertTrue(controller.stateSnapshot.isGridVisible, "Grid should reappear when zooming back to 2 refinements")
+        
+        _ = controller.zoomOut()
+        XCTAssertTrue(controller.stateSnapshot.isGridVisible, "Grid should remain visible at 1 refinement")
+        
+        _ = controller.zoomOut()
+        XCTAssertTrue(controller.stateSnapshot.isGridVisible, "Grid should remain visible at 0 refinements")
     }
 }
 
