@@ -4,6 +4,8 @@
 
 Named after the [Deadmau5 song Asdfghjkl](https://www.youtube.com/watch?v=1aP910O2774)
 
+![banner](banner.jpg)
+
 ## What does it do?
 
 1. Double tap `Cmd` to see a keyboard grid on your screen.
