@@ -47,6 +47,8 @@ Mice are slow and a long way away from the keyboard.
 
 Read [ARCHITECTURE.md](ARCHITECTURE.md) for a deeper look at the current components and runtime flow.
 
+![Architecture diagram](architecture.jpg)
+
 ### Multiple displays
 
 On multi-display setups, the 4×10 grid is divided horizontally across all overlay windows so
